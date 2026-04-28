@@ -1,11 +1,11 @@
-"""NovelPlanner - Punto de entrada principal.
+"""NovelPlanner - Punto de entrada principal - Tema "Jardín de Escritura".
 
 Ejecuta:  python main.py
-Requiere: customtkinter, Pillow
+Requiere: customtkinter, Pillow, numpy
 """
 
 import customtkinter as ctk
-from config import WINDOW_SIZE
+from config import WINDOW_SIZE, COLORS
 from database import Database
 from view_dashboard import DashboardView
 from view_historia import HistoriaView
@@ -16,8 +16,9 @@ class NovelPlannerApp(ctk.CTk):
 
     def __init__(self):
         super().__init__()
-        self.title("NovelPlanner - Para Escritores")
+        self.title("✿ NovelPlanner - Para Escritores ✿")
         self.geometry(WINDOW_SIZE)
+        self.configure(fg_color=COLORS["bg_principal"])
         self.db = Database()
         self._current_view = None
         self.mostrar_dashboard()

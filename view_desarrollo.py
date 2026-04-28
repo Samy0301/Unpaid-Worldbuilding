@@ -1,8 +1,9 @@
-"""Vista de capítulos y sus partes."""
+"""Vista de capítulos y sus partes - Tema Jardín."""
 
 import customtkinter as ctk
 from tkinter import messagebox
-from config import FONTS
+from config import FONTS, COLORS
+from utils import ImageUtils
 from dialogs import CapituloDialog, ParteDialog
 
 
@@ -15,12 +16,23 @@ class DesarrolloView(ctk.CTkFrame):
         self.historia_id = historia_id
         self.pack(fill="both", expand=True)
 
+        # Header decorativo
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=10)
-        ctk.CTkLabel(top, text="📝 Desarrollo por Capítulos", font=FONTS["subtitle"]).pack(side="left")
+        ctk.CTkLabel(
+            top, text="📝 Desarrollo por Capítulos", font=FONTS["subtitle"],
+            text_color=COLORS["text_primary"]
+        ).pack(side="left")
+        flower = ImageUtils.load_flower("card_accent.png", (35, 35))
+        if flower:
+            ctk.CTkLabel(top, image=flower, text="").pack(side="left", padx=8)
         ctk.CTkButton(
-            top, text="+ Nuevo Capítulo", command=self._crear, corner_radius=15
+            top, text="+ Nuevo Capítulo", command=self._crear, corner_radius=15,
+            fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(side="right")
+
+        ImageUtils.add_divider(self, pady=5)
 
         self.lista_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.lista_frame.pack(fill="both", expand=True)
@@ -36,36 +48,55 @@ class DesarrolloView(ctk.CTkFrame):
         )
 
         if not caps:
-            ctk.CTkLabel(self.lista_frame, text="No hay capítulos aún", text_color="gray").pack(pady=30)
+            empty = ctk.CTkFrame(self.lista_frame, fg_color=COLORS["bg_card"], corner_radius=15,
+                                border_color=COLORS["border_card"], border_width=1)
+            empty.pack(pady=30, padx=20)
+            ImageUtils.add_corner_flowers(empty, (50, 50))
+            ctk.CTkLabel(
+                empty, text="No hay capítulos aún\n¡Empieza a escribir tu historia!",
+                font=FONTS["body"], text_color=COLORS["text_secondary"]
+            ).pack(pady=30, padx=30)
             return
 
         for cid, num, titulo, plot in caps:
-            card = ctk.CTkFrame(self.lista_frame, corner_radius=15)
+            card = ctk.CTkFrame(
+                self.lista_frame, corner_radius=15,
+                fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=1
+            )
             card.pack(fill="x", pady=8, padx=5)
+            ImageUtils.add_corner_flowers(card, (35, 35))
 
             header = ctk.CTkFrame(card, fg_color="transparent")
             header.pack(fill="x", padx=15, pady=10)
-            ctk.CTkLabel(header, text=f"Cap. {num}: {titulo}", font=FONTS["heading"]).pack(side="left")
+            ctk.CTkLabel(
+                header, text=f"Cap. {num}: {titulo}", font=FONTS["heading"],
+                text_color=COLORS["text_primary"]
+            ).pack(side="left")
 
             btns = ctk.CTkFrame(header, fg_color="transparent")
             btns.pack(side="right")
             ctk.CTkButton(
                 btns, text="Ver partes", width=80, corner_radius=10,
+                fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+                text_color=COLORS["text_light"],
                 command=lambda c=cid: self._ver_partes(c)
             ).pack(side="left", padx=2)
             ctk.CTkButton(
                 btns, text="✏️", width=40, corner_radius=10,
+                fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
                 command=lambda c=cid, n=num, t=titulo, p=plot: self._editar(c, n, t, p)
             ).pack(side="left", padx=2)
             ctk.CTkButton(
-                btns, text="🗑", width=40, fg_color="#8B0000", hover_color="#5c0000", corner_radius=10,
+                btns, text="🗑", width=40,
+                fg_color=COLORS["danger"], hover_color=COLORS["danger_hover"],
+                text_color=COLORS["text_light"], corner_radius=10,
                 command=lambda c=cid, n=num: self._borrar(c, n)
             ).pack(side="left", padx=2)
 
             if plot:
                 ctk.CTkLabel(
                     card, text=f"Plot: {plot}", font=FONTS["small"],
-                    text_color="gray", wraplength=600
+                    text_color=COLORS["text_secondary"], wraplength=600
                 ).pack(padx=15, pady=(0, 10))
 
     def _crear(self):
@@ -88,13 +119,25 @@ class DesarrolloView(ctk.CTkFrame):
         dialog = ctk.CTkToplevel(self)
         dialog.title("Partes del Capítulo")
         dialog.geometry("500x600")
+        dialog.configure(fg_color=COLORS["bg_dialog"])
         dialog.grab_set()
 
+        # Header decorativo
+        header = ctk.CTkFrame(dialog, fg_color="transparent")
+        header.pack(fill="x", padx=10, pady=10)
+        ctk.CTkLabel(
+            header, text="✿ Partes del Capítulo ✿", font=FONTS["subtitle"],
+            text_color=COLORS["text_primary"]
+        ).pack(side="left")
         ctk.CTkButton(
-            dialog, text="+ Añadir Parte",
+            header, text="+ Añadir Parte",
             command=lambda: self._crear_parte(scroll, capitulo_id),
-            corner_radius=15
-        ).pack(pady=15)
+            corner_radius=15,
+            fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"]
+        ).pack(side="right")
+
+        ImageUtils.add_divider(dialog, pady=5)
 
         scroll = ctk.CTkScrollableFrame(dialog, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10)
@@ -110,24 +153,34 @@ class DesarrolloView(ctk.CTkFrame):
             (capitulo_id,)
         )
         for pid, nombre, contenido in partes:
-            f = ctk.CTkFrame(scroll, corner_radius=12)
+            f = ctk.CTkFrame(
+                scroll, corner_radius=12,
+                fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=1
+            )
             f.pack(fill="x", pady=5)
+            ImageUtils.add_corner_flowers(f, (30, 30))
 
             hdr = ctk.CTkFrame(f, fg_color="transparent")
             hdr.pack(fill="x", padx=10, pady=(10, 5))
-            ctk.CTkLabel(hdr, text=nombre, font=FONTS["heading"]).pack(side="left")
+            ctk.CTkLabel(
+                hdr, text=nombre, font=FONTS["heading"],
+                text_color=COLORS["text_primary"]
+            ).pack(side="left")
             ctk.CTkButton(
                 hdr, text="✏️", width=35, corner_radius=8,
+                fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
                 command=lambda p=pid, n=nombre, c=contenido: self._editar_parte(scroll, capitulo_id, p, n, c)
             ).pack(side="right", padx=2)
             ctk.CTkButton(
-                hdr, text="🗑", width=35, fg_color="#8B0000", hover_color="#5c0000", corner_radius=8,
+                hdr, text="🗑", width=35,
+                fg_color=COLORS["danger"], hover_color=COLORS["danger_hover"],
+                text_color=COLORS["text_light"], corner_radius=8,
                 command=lambda p=pid, n=nombre: self._borrar_parte(scroll, capitulo_id, p, n)
             ).pack(side="right", padx=2)
-
-            ctk.CTkLabel(f, text=contenido, font=FONTS["body"], wraplength=420).pack(
-                anchor="w", padx=10, pady=(0, 10)
-            )
+            ctk.CTkLabel(
+                f, text=contenido, font=FONTS["body"],
+                text_color=COLORS["text_secondary"], wraplength=420
+            ).pack(anchor="w", padx=10, pady=(0, 10))
 
     def _crear_parte(self, scroll, capitulo_id):
         d = ParteDialog(self, self.db, capitulo_id)

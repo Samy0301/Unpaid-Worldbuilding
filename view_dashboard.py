@@ -1,8 +1,8 @@
-"""Vista principal: grid de tarjetas con todas las novelas."""
+"""Vista principal: grid de tarjetas con todas las novelas - Tema Jardín."""
 
 import customtkinter as ctk
 from tkinter import messagebox
-from config import FONTS, CARD_WIDTH, CARD_HEIGHT
+from config import FONTS, COLORS, CARD_WIDTH, CARD_HEIGHT
 from utils import ImageUtils
 from dialogs import HistoriaDialog
 
@@ -11,19 +11,37 @@ class DashboardView(ctk.CTkFrame):
     """Pantalla de inicio con el listado de historias."""
 
     def __init__(self, parent, app):
-        super().__init__(parent, fg_color="transparent")
+        super().__init__(parent, fg_color=COLORS["bg_principal"])
         self.app = app
         self.db = app.db
         self.pack(fill="both", expand=True)
 
-        # Header
+        # Header con decoración
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=20, pady=20)
-        ctk.CTkLabel(header, text="📚 Mis Novelas", font=FONTS["title"]).pack(side="left")
+
+        ctk.CTkLabel(header, text="📚 Mis Novelas", font=FONTS["title"], text_color=COLORS["text_primary"]).pack(side="left")
+
+        # Flor decorativa en header
+        flower = ImageUtils.load_flower("card_accent.png", (50, 50))
+        if flower:
+            ctk.CTkLabel(header, image=flower, text="").pack(side="left", padx=10)
+
         ctk.CTkButton(
             header, text="+ Nueva Historia", command=self._crear_historia,
-            width=150, height=40, corner_radius=20
+            width=150, height=40, corner_radius=20,
+            fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(side="right")
+
+        # Separador floral
+        ImageUtils.add_divider(self, pady=5)
+
+        # Subtítulo decorativo
+        ctk.CTkLabel(
+            self, text="✿  Cada historia es una flor que espera florecer  ✿",
+            font=FONTS["script"], text_color=COLORS["btn_hover"]
+        ).pack(pady=(0, 10))
 
         # Grid scrollable
         self.grid_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
@@ -40,33 +58,52 @@ class DashboardView(ctk.CTkFrame):
         )
 
         if not historias:
+            frame_empty = ctk.CTkFrame(self.grid_frame, fg_color=COLORS["bg_card"], corner_radius=20)
+            frame_empty.pack(pady=50, padx=20)
+            ImageUtils.add_corner_flowers(frame_empty, (60, 60))
             ctk.CTkLabel(
-                self.grid_frame, text="No hay historias aún. ¡Crea la primera!",
-                font=FONTS["body"], text_color="gray"
-            ).pack(pady=50)
+                frame_empty, text="No hay historias aún.\n¡Crea la primera!",
+                font=FONTS["body"], text_color=COLORS["text_secondary"]
+            ).pack(pady=40, padx=40)
             return
 
         for i, (hid, nombre, resumen, foto) in enumerate(historias):
-            card = ctk.CTkFrame(self.grid_frame, corner_radius=15, width=CARD_WIDTH, height=CARD_HEIGHT)
+            card = ctk.CTkFrame(
+                self.grid_frame, corner_radius=15, width=CARD_WIDTH, height=CARD_HEIGHT,
+                fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=2
+            )
             card.grid(row=i // 3, column=i % 3, padx=15, pady=15, sticky="nsew")
             card.grid_propagate(False)
 
-            img = ImageUtils.blob_a_ctkimage(foto, (CARD_WIDTH, 180))
-            ctk.CTkLabel(card, image=img, text="").pack(fill="x")
+            # Flores en esquinas de la tarjeta
+            ImageUtils.add_corner_flowers(card, (50, 50))
 
-            ctk.CTkLabel(card, text=nombre, font=FONTS["heading"], wraplength=250).pack(pady=(10, 5))
+            img = ImageUtils.blob_a_ctkimage(foto, (CARD_WIDTH, 180))
+            ctk.CTkLabel(card, image=img, text="").pack(fill="x", pady=(10, 0))
+
+            ctk.CTkLabel(
+                card, text=nombre, font=FONTS["heading"],
+                text_color=COLORS["text_primary"], wraplength=250
+            ).pack(pady=(10, 5))
+
             resumen_text = (resumen[:80] + "...") if resumen and len(resumen) > 80 else (resumen or "")
-            ctk.CTkLabel(card, text=resumen_text, font=FONTS["small"], text_color="gray", wraplength=250).pack()
+            ctk.CTkLabel(
+                card, text=resumen_text, font=FONTS["small"],
+                text_color=COLORS["text_secondary"], wraplength=250
+            ).pack()
 
             btn_frame = ctk.CTkFrame(card, fg_color="transparent")
             btn_frame.pack(pady=10)
             ctk.CTkButton(
                 btn_frame, text="Abrir", width=80, corner_radius=15,
+                fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+                text_color=COLORS["text_light"],
                 command=lambda h=hid: self.app.abrir_historia(h)
             ).pack(side="left", padx=5)
             ctk.CTkButton(
                 btn_frame, text="🗑", width=40,
-                fg_color="#8B0000", hover_color="#5c0000", corner_radius=15,
+                fg_color=COLORS["danger"], hover_color=COLORS["danger_hover"],
+                text_color=COLORS["text_light"], corner_radius=15,
                 command=lambda h=hid, n=nombre: self._borrar_historia(h, n)
             ).pack(side="left", padx=5)
 
@@ -77,7 +114,6 @@ class DashboardView(ctk.CTkFrame):
 
     def _borrar_historia(self, hid, nombre):
         if messagebox.askyesno("Confirmar", f"¿Borrar '{nombre}' y todo su contenido?"):
-            # Borrado en cascada manual (por si acaso)
             self.db.ejecutar(
                 "DELETE FROM partes_capitulo WHERE capitulo_id IN (SELECT id FROM capitulos WHERE historia_id=?)",
                 (hid,)

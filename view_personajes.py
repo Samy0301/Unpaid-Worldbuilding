@@ -1,8 +1,8 @@
-"""Gestión de personajes organizados por categoría."""
+"""Gestión de personajes organizados por categoría - Tema Jardín."""
 
 import customtkinter as ctk
 from tkinter import messagebox
-from config import FONTS
+from config import FONTS, COLORS
 from utils import ImageUtils
 from dialogs import PersonajeDialog, FichaPersonajeDialog
 
@@ -18,7 +18,26 @@ class PersonajesView(ctk.CTkFrame):
         self.historia_id = historia_id
         self.pack(fill="both", expand=True)
 
-        self.tabview = ctk.CTkTabview(self)
+        # Header decorativo
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.pack(fill="x", pady=(0, 10))
+        ctk.CTkLabel(
+            header, text="👤 Personajes", font=FONTS["subtitle"],
+            text_color=COLORS["text_primary"]
+        ).pack(side="left")
+        flower = ImageUtils.load_flower("card_accent.png", (40, 40))
+        if flower:
+            ctk.CTkLabel(header, image=flower, text="").pack(side="left", padx=10)
+
+        self.tabview = ctk.CTkTabview(
+            self,
+            fg_color=COLORS["bg_card"],
+            segmented_button_fg_color=COLORS["btn_primary"],
+            segmented_button_selected_color=COLORS["btn_hover"],
+            segmented_button_selected_hover_color=COLORS["accent"],
+            segmented_button_unselected_hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"]
+        )
         self.tabview.pack(fill="both", expand=True)
 
         for cat in self.CATEGORIAS:
@@ -26,7 +45,9 @@ class PersonajesView(ctk.CTkFrame):
 
         ctk.CTkButton(
             self, text="+ Nuevo Personaje", command=self._crear,
-            corner_radius=15
+            corner_radius=15,
+            fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(pady=15)
 
         self._refresh()
@@ -48,30 +69,50 @@ class PersonajesView(ctk.CTkFrame):
         )
 
         if not personajes:
-            ctk.CTkLabel(scroll, text=f"No hay personajes {categoria}s", text_color="gray").pack(pady=30)
+            empty = ctk.CTkFrame(scroll, fg_color=COLORS["bg_card"], corner_radius=15,
+                                border_color=COLORS["border_card"], border_width=1)
+            empty.pack(pady=30, padx=20)
+            ImageUtils.add_corner_flowers(empty, (50, 50))
+            ctk.CTkLabel(
+                empty, text=f"No hay personajes {categoria}s aún",
+                font=FONTS["body"], text_color=COLORS["text_secondary"]
+            ).pack(pady=30, padx=30)
             return
 
         for i, (pid, nombre, foto) in enumerate(personajes):
-            card = ctk.CTkFrame(scroll, corner_radius=15, width=200, height=250)
+            card = ctk.CTkFrame(
+                scroll, corner_radius=15, width=200, height=250,
+                fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=1
+            )
             card.grid(row=i // 4, column=i % 4, padx=10, pady=10)
             card.grid_propagate(False)
 
+            ImageUtils.add_corner_flowers(card, (40, 40))
+
             img = ImageUtils.blob_a_ctkimage(foto, (200, 150))
-            ctk.CTkLabel(card, image=img, text="").pack()
-            ctk.CTkLabel(card, text=nombre, font=FONTS["heading"]).pack(pady=5)
+            ctk.CTkLabel(card, image=img, text="").pack(pady=(10, 0))
+            ctk.CTkLabel(
+                card, text=nombre, font=FONTS["heading"],
+                text_color=COLORS["text_primary"]
+            ).pack(pady=5)
 
             btnf = ctk.CTkFrame(card, fg_color="transparent")
             btnf.pack(pady=5)
             ctk.CTkButton(
                 btnf, text="Ver", width=60, corner_radius=10,
+                fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+                text_color=COLORS["text_light"],
                 command=lambda p=pid: FichaPersonajeDialog(self, self.db, p)
             ).pack(side="left", padx=2)
             ctk.CTkButton(
                 btnf, text="✏️", width=40, corner_radius=10,
+                fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
                 command=lambda p=pid: self._editar(p)
             ).pack(side="left", padx=2)
             ctk.CTkButton(
-                btnf, text="🗑", width=40, fg_color="#8B0000", hover_color="#5c0000", corner_radius=10,
+                btnf, text="🗑", width=40,
+                fg_color=COLORS["danger"], hover_color=COLORS["danger_hover"],
+                text_color=COLORS["text_light"], corner_radius=10,
                 command=lambda p=pid, n=nombre: self._borrar(p, n)
             ).pack(side="left", padx=2)
 

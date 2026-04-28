@@ -1,9 +1,10 @@
-"""Mapa interactivo de relaciones entre personajes (node-graph)."""
+import os
+"""Mapa interactivo de relaciones entre personajes - Tema Jardín."""
 
 import tkinter as tk
 from tkinter import Menu, messagebox
 import customtkinter as ctk
-from config import FONTS, RELATION_COLORS, NODE_RADIUS
+from config import FONTS, COLORS, RELATION_COLORS, NODE_RADIUS, FLOWERS_DIR
 from utils import ImageUtils
 from dialogs import RelacionDialog, FichaPersonajeDialog
 
@@ -12,34 +13,45 @@ class ConexionesView(ctk.CTkFrame):
     """Canvas interactivo para visualizar y editar relaciones entre personajes."""
 
     def __init__(self, parent, db, historia_id):
-        super().__init__(parent, fg_color="transparent")
+        super().__init__(parent, fg_color=COLORS["bg_principal"])
         self.db = db
         self.historia_id = historia_id
         self.pack(fill="both", expand=True)
 
         # ─── Estado del modo ───
-        self.modo = "mover"   # "mover" | "conectar"
+        self.modo = "mover"
 
         # ─── Header ───
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=5, padx=10)
-        ctk.CTkLabel(top, text="🕸️ Mapa de Conexiones", font=FONTS["subtitle"]).pack(side="left")
+        ctk.CTkLabel(
+            top, text="🕸️ Mapa de Conexiones", font=FONTS["subtitle"],
+            text_color=COLORS["text_primary"]
+        ).pack(side="left")
 
-        # Botón toggle de modo
+        flower = ImageUtils.load_flower("card_accent.png", (35, 35))
+        if flower:
+            ctk.CTkLabel(top, image=flower, text="").pack(side="left", padx=8)
+
         self.btn_modo = ctk.CTkButton(
             top, text="✋  Modo: Mover", command=self._toggle_modo,
-            fg_color="#2F4F4F", hover_color="#1f3333",
+            fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"],
             corner_radius=15, width=160, height=35
         )
         self.btn_modo.pack(side="right", padx=5)
 
         ctk.CTkButton(
             top, text="➕ Añadir personaje", command=self._mostrar_picker,
-            corner_radius=15, width=140
+            corner_radius=15, width=140,
+            fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
+            text_color=COLORS["text_light"]
         ).pack(side="right", padx=5)
         ctk.CTkButton(
             top, text="💾 Guardar posiciones", command=self._guardar_posiciones,
-            corner_radius=15, width=140
+            corner_radius=15, width=140,
+            fg_color=COLORS["success"], hover_color="#66BB6A",
+            text_color=COLORS["text_light"]
         ).pack(side="right", padx=5)
 
         # ─── Leyenda ───
@@ -48,28 +60,32 @@ class ConexionesView(ctk.CTkFrame):
         for tipo, color in RELATION_COLORS.items():
             f = ctk.CTkFrame(leyenda, width=12, height=12, corner_radius=6, fg_color=color)
             f.pack(side="left", padx=(0, 4))
-            ctk.CTkLabel(leyenda, text=tipo, font=FONTS["caption"]).pack(side="left", padx=(0, 12))
+            ctk.CTkLabel(leyenda, text=tipo, font=FONTS["caption"], text_color=COLORS["text_secondary"]).pack(side="left", padx=(0, 12))
 
         self.lbl_ayuda = ctk.CTkLabel(
             leyenda,
             text="Arrastra nodos para moverlos  •  Doble clic para ver ficha  •  Click derecho para opciones",
-            font=FONTS["caption"], text_color="gray"
+            font=FONTS["caption"], text_color=COLORS["text_secondary"]
         )
         self.lbl_ayuda.pack(side="left", padx=20)
 
-        # ─── Canvas ───
-        canvas_frame = ctk.CTkFrame(self)
+        # ─── Canvas con fondo floral ───
+        canvas_frame = ctk.CTkFrame(self, fg_color=COLORS["bg_card"],
+                                     border_color=COLORS["border_card"], border_width=2)
         canvas_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
-        self.canvas = tk.Canvas(canvas_frame, bg="#1e1e1e", highlightthickness=0)
+        self.canvas = tk.Canvas(canvas_frame, bg="#FFF8F5", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
+        # Fondo floral sutil
+        self._fondo_floral = None
+        self._cargar_fondo_floral()
+
         # ─── Estado de interacción ───
-        self.nodos = {}       # pid -> {x, y, items[], foto_tk, nombre}
-        self.conexiones = []  # (rid, p1, p2, tipo, line_id, text_id)
+        self.nodos = {}
+        self.conexiones = []
         self._drag = {"nodo": None, "ox": 0, "oy": 0, "linea_temp": None}
 
-        # Bindings
         self.canvas.bind("<Button-1>", self._on_press)
         self.canvas.bind("<B1-Motion>", self._on_drag)
         self.canvas.bind("<ButtonRelease-1>", self._on_release)
@@ -78,6 +94,26 @@ class ConexionesView(ctk.CTkFrame):
 
         self._cargar_datos()
 
+    def _cargar_fondo_floral(self):
+        """Carga el fondo floral en el canvas."""
+        try:
+            from PIL import ImageTk
+            img = ImageUtils.load_flower("canvas_bg.png")
+            if img:
+                # Obtener tamaño del canvas
+                self.canvas.update_idletasks()
+                w = self.canvas.winfo_width() or 800
+                h = self.canvas.winfo_height() or 600
+                # Redimensionar fondo al canvas
+                from PIL import Image
+                pil_img = Image.open(os.path.join(FLOWERS_DIR, "canvas_bg.png"))
+                pil_img = pil_img.resize((w, h), Image.LANCZOS)
+                self._fondo_floral = ImageTk.PhotoImage(pil_img)
+                self.canvas.create_image(0, 0, image=self._fondo_floral, anchor="nw", tags="fondo")
+                self.canvas.tag_lower("fondo")
+        except Exception:
+            pass
+
     # ─── Toggle de modo ───
 
     def _toggle_modo(self):
@@ -85,7 +121,7 @@ class ConexionesView(ctk.CTkFrame):
             self.modo = "conectar"
             self.btn_modo.configure(
                 text="🔗  Modo: Conectar",
-                fg_color="#722F37", hover_color="#5a252f"
+                fg_color=COLORS["accent"], hover_color="#C2185B"
             )
             self.lbl_ayuda.configure(
                 text="Arrastra desde un nodo a otro para crear una conexión  •  Doble clic para ver ficha"
@@ -95,7 +131,7 @@ class ConexionesView(ctk.CTkFrame):
             self.modo = "mover"
             self.btn_modo.configure(
                 text="✋  Modo: Mover",
-                fg_color="#2F4F4F", hover_color="#1f3333"
+                fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"]
             )
             self.lbl_ayuda.configure(
                 text="Arrastra nodos para moverlos  •  Doble clic para ver ficha  •  Click derecho para opciones"
@@ -108,6 +144,11 @@ class ConexionesView(ctk.CTkFrame):
         self.canvas.delete("all")
         self.nodos.clear()
         self.conexiones.clear()
+
+        # Restaurar fondo
+        if self._fondo_floral:
+            self.canvas.create_image(0, 0, image=self._fondo_floral, anchor="nw", tags="fondo")
+            self.canvas.tag_lower("fondo")
 
         personajes = self.db.obtener("""
             SELECT p.id, p.nombre, p.foto_blob,
@@ -133,13 +174,14 @@ class ConexionesView(ctk.CTkFrame):
         foto_tk = ImageUtils.blob_a_tkimage(foto_blob)
         r = NODE_RADIUS
 
+        # Círculo con borde rosa
         circulo = self.canvas.create_oval(
             x - r, y - r, x + r, y + r,
-            fill="#2b2b2b", outline="#555555", width=2, tags=f"nodo_{pid}"
+            fill="#FFF0F5", outline="#D4A5A5", width=3, tags=f"nodo_{pid}"
         )
         imagen = self.canvas.create_image(x, y, image=foto_tk, tags=f"nodo_{pid}")
         texto = self.canvas.create_text(
-            x, y + r + 15, text=nombre, fill="white",
+            x, y + r + 15, text=nombre, fill="#5D4037",
             font=("Segoe UI", 10, "bold"), tags=f"nodo_{pid}"
         )
         hit = self.canvas.create_oval(
@@ -207,7 +249,7 @@ class ConexionesView(ctk.CTkFrame):
             if p1 in self.nodos and p2 in self.nodos:
                 self._dibujar_conexion(rid, p1, p2, tipo)
 
-    # ─── Interacción: mover / conectar ───
+    # ─── Interacción ───
 
     def _nodo_en_coords(self, x, y):
         items = self.canvas.find_overlapping(x - 5, y - 5, x + 5, y + 5)
@@ -231,13 +273,11 @@ class ConexionesView(ctk.CTkFrame):
         pid = self._drag["nodo"]
 
         if self.modo == "mover":
-            # Solo mover el nodo, sin líneas temporales
             nx = event.x - self._drag["ox"]
             ny = event.y - self._drag["oy"]
             self._mover_nodo(pid, nx, ny)
 
         elif self.modo == "conectar":
-            # Dibujar línea temporal desde el borde del nodo hacia el cursor
             cx, cy = self.nodos[pid]["x"], self.nodos[pid]["y"]
             dx, dy = event.x - cx, event.y - cy
             d = (dx ** 2 + dy ** 2) ** 0.5
@@ -249,7 +289,7 @@ class ConexionesView(ctk.CTkFrame):
 
             if self._drag["linea_temp"] is None:
                 self._drag["linea_temp"] = self.canvas.create_line(
-                    x1, y1, event.x, event.y, fill="#888888", width=2, dash=(4, 4)
+                    x1, y1, event.x, event.y, fill="#D4A5A5", width=2, dash=(4, 4)
                 )
             else:
                 self.canvas.coords(self._drag["linea_temp"], x1, y1, event.x, event.y)
@@ -263,7 +303,6 @@ class ConexionesView(ctk.CTkFrame):
         for item in self.nodos[pid]["items"]:
             self.canvas.move(item, dx, dy)
 
-        # Solo actualizar las líneas conectadas a este nodo
         for rid, p1, p2, tipo, line_id, text_id in self.conexiones:
             if p1 == pid or p2 == pid:
                 self._actualizar_conexion(p1, p2, line_id, text_id)
@@ -288,7 +327,7 @@ class ConexionesView(ctk.CTkFrame):
         self.wait_window(dialog)
         self._redibujar_conexiones()
 
-    # ─── Interacción: doble clic y menú contextual ───
+    # ─── Doble clic y menú contextual ───
 
     def _on_double_click(self, event):
         pid = self._nodo_en_coords(event.x, event.y)
@@ -309,7 +348,7 @@ class ConexionesView(ctk.CTkFrame):
             self._menu_nodo(event.x_root, event.y_root, pid)
 
     def _menu_linea(self, x, y, rid):
-        menu = Menu(self, tearoff=0, bg="#2b2b2b", fg="white", activebackground="#444444")
+        menu = Menu(self, tearoff=0, bg="#FFF0F5", fg="#5D4037", activebackground="#FFB6C1")
         menu.add_command(label="🗑 Borrar conexión", command=lambda: self._borrar_linea(rid))
         menu.tk_popup(x, y)
 
@@ -319,7 +358,7 @@ class ConexionesView(ctk.CTkFrame):
             self._redibujar_conexiones()
 
     def _menu_nodo(self, x, y, pid):
-        menu = Menu(self, tearoff=0, bg="#2b2b2b", fg="white", activebackground="#444444")
+        menu = Menu(self, tearoff=0, bg="#FFF0F5", fg="#5D4037", activebackground="#FFB6C1")
         menu.add_command(label="👁 Ver ficha", command=lambda: FichaPersonajeDialog(self, self.db, pid))
         menu.add_command(label="🗑 Quitar del mapa", command=lambda: self._quitar_nodo(pid))
         menu.tk_popup(x, y)
@@ -341,6 +380,7 @@ class ConexionesView(ctk.CTkFrame):
         dialog = ctk.CTkToplevel(self)
         dialog.title("Añadir personajes al mapa")
         dialog.geometry("400x400")
+        dialog.configure(fg_color=COLORS["bg_dialog"])
         dialog.grab_set()
 
         scroll = ctk.CTkScrollableFrame(dialog, fg_color="transparent")
@@ -354,19 +394,28 @@ class ConexionesView(ctk.CTkFrame):
         """, (self.historia_id, self.historia_id))
 
         if not personajes:
-            ctk.CTkLabel(scroll, text="Todos los personajes ya están en el mapa.", text_color="gray").pack(pady=20)
+            ctk.CTkLabel(
+                scroll, text="Todos los personajes ya están en el mapa.",
+                text_color=COLORS["text_secondary"]
+            ).pack(pady=20)
             return
 
-        ctk.CTkLabel(scroll, text="Haz clic para añadir:", font=FONTS["heading"]).pack(pady=10)
+        ctk.CTkLabel(
+            scroll, text="Haz clic para añadir:", font=FONTS["heading"],
+            text_color=COLORS["text_primary"]
+        ).pack(pady=10)
 
         for pid, nombre, foto in personajes:
             row = ctk.CTkFrame(scroll, fg_color="transparent")
             row.pack(fill="x", pady=3)
             img = ImageUtils.blob_a_ctkimage(foto, (40, 40))
             ctk.CTkLabel(row, image=img, text="").pack(side="left", padx=5)
-            ctk.CTkLabel(row, text=nombre, font=FONTS["body"]).pack(side="left", padx=10)
+            ctk.CTkLabel(
+                row, text=nombre, font=FONTS["body"], text_color=COLORS["text_primary"]
+            ).pack(side="left", padx=10)
             ctk.CTkButton(
                 row, text="➕", width=40, corner_radius=8,
+                fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
                 command=lambda p=pid: self._add_personaje(dialog, p)
             ).pack(side="right")
 
@@ -387,4 +436,4 @@ class ConexionesView(ctk.CTkFrame):
                 "INSERT OR REPLACE INTO posiciones_nodos (historia_id, personaje_id, x, y) VALUES (?, ?, ?, ?)",
                 (self.historia_id, pid, data["x"], data["y"])
             )
-        messagebox.showinfo("Guardado", "Posiciones guardadas correctamente.")
+        messagebox.showinfo("Guardado", "Posiciones guardadas correctamente. 🌸")

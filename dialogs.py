@@ -1,8 +1,8 @@
-"""Diálogos reutilizables para formularios (crear/editar/mostrar)."""
+"""Diálogos reutilizables para formularios - Tema Jardín."""
 
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
-from config import FONTS
+from config import FONTS, COLORS, FLOWERS_DIR
 from utils import ImageUtils
 
 
@@ -13,6 +13,7 @@ class _BaseDialog(ctk.CTkToplevel):
         super().__init__(parent)
         self.title(title)
         self.geometry(geometry)
+        self.configure(fg_color=COLORS["bg_dialog"])
         self.grab_set()
 
         self.scroll = ctk.CTkScrollableFrame(self, fg_color="transparent")
@@ -21,19 +22,34 @@ class _BaseDialog(ctk.CTkToplevel):
         self._foto_blob = None
 
     def _add_field(self, label: str, widget_type: str, values=None, default="", height=80):
-        ctk.CTkLabel(self.scroll, text=label, font=FONTS["heading"]).pack(pady=(15, 3))
+        ctk.CTkLabel(
+            self.scroll, text=label, font=FONTS["heading"],
+            text_color=COLORS["text_primary"]
+        ).pack(pady=(15, 3))
         if widget_type == "entry":
-            w = ctk.CTkEntry(self.scroll, width=400)
+            w = ctk.CTkEntry(
+                self.scroll, width=400,
+                fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
+                border_color=COLORS["border_card"]
+            )
             if default:
                 w.insert(0, default)
             w.pack()
         elif widget_type == "combo":
-            w = ctk.CTkComboBox(self.scroll, values=values or [], width=400)
+            w = ctk.CTkComboBox(
+                self.scroll, values=values or [], width=400,
+                fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
+                border_color=COLORS["border_card"], button_color=COLORS["btn_primary"]
+            )
             if default:
                 w.set(default)
             w.pack()
         elif widget_type == "text":
-            w = ctk.CTkTextbox(self.scroll, width=400, height=height)
+            w = ctk.CTkTextbox(
+                self.scroll, width=400, height=height,
+                fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
+                border_color=COLORS["border_card"]
+            )
             if default:
                 w.insert("1.0", default)
             w.pack()
@@ -44,17 +60,19 @@ class _BaseDialog(ctk.CTkToplevel):
     def _add_foto_selector(self, label: str = "📷 Subir foto", existing_blob=None):
         self._foto_blob = existing_blob
         btn_text = "✅ Foto cargada" if existing_blob else label
-        btn_color = "green" if existing_blob else None
+        btn_color = COLORS["success"] if existing_blob else COLORS["btn_primary"]
 
         def seleccionar():
             ruta = filedialog.askopenfilename(filetypes=[("Imágenes", "*.png *.jpg *.jpeg")])
             if ruta:
                 self._foto_blob = ImageUtils.archivo_a_blob(ruta)
-                btn.configure(text="✅ Foto cargada", fg_color="green")
+                btn.configure(text="✅ Foto cargada 🌸", fg_color=COLORS["success"])
 
-        btn = ctk.CTkButton(self.scroll, text=btn_text, command=seleccionar, corner_radius=15)
-        if btn_color:
-            btn.configure(fg_color=btn_color)
+        btn = ctk.CTkButton(
+            self.scroll, text=btn_text, command=seleccionar, corner_radius=15,
+            fg_color=btn_color, hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"]
+        )
         btn.pack(pady=15)
 
     @property
@@ -68,7 +86,7 @@ class HistoriaDialog(_BaseDialog):
     def __init__(self, parent, db, historia_id=None):
         self.db = db
         self.historia_id = historia_id
-        title = "Editar Historia" if historia_id else "Nueva Historia"
+        title = "✿ Editar Historia ✿" if historia_id else "✿ Nueva Historia ✿"
         super().__init__(parent, title, "500x600")
 
         if historia_id:
@@ -81,14 +99,21 @@ class HistoriaDialog(_BaseDialog):
             nombre = resumen = plot = ""
             foto = None
 
+        # Decoración floral
+        flower = ImageUtils.load_flower("card_accent.png", (60, 60))
+        if flower:
+            ctk.CTkLabel(self.scroll, image=flower, text="").pack(pady=(10, 5))
+
         self.entry_nombre = self._add_field("Nombre de la novela *", "entry", default=nombre)
         self.entry_resumen = self._add_field("Resumen general", "text", default=resumen)
         self.entry_plot = self._add_field("Plot / Trama general", "text", default=plot)
         self._add_foto_selector("📷 Subir portada", foto)
 
         ctk.CTkButton(
-            self.scroll, text="Guardar", command=self._guardar,
-            fg_color="#722F37", hover_color="#5a252f", corner_radius=15
+            self.scroll, text="Guardar 🌸", command=self._guardar,
+            fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"], corner_radius=15,
+            font=FONTS["heading"]
         ).pack(pady=20)
 
     def _guardar(self):
@@ -122,7 +147,7 @@ class PersonajeDialog(_BaseDialog):
         self.db = db
         self.historia_id = historia_id
         self.personaje_id = personaje_id
-        title = "Editar Personaje" if personaje_id else "Nuevo Personaje"
+        title = "✿ Editar Personaje ✿" if personaje_id else "✿ Nuevo Personaje ✿"
         super().__init__(parent, title, "500x750")
 
         if personaje_id:
@@ -136,6 +161,10 @@ class PersonajeDialog(_BaseDialog):
             defaults["categoria"] = "principal"
             defaults["foto"] = None
 
+        flower = ImageUtils.load_flower("card_accent.png", (50, 50))
+        if flower:
+            ctk.CTkLabel(self.scroll, image=flower, text="").pack(pady=(10, 5))
+
         self.entry_nombre = self._add_field("Nombre *", "entry", default=defaults["nombre"])
         self.combo_cat = self._add_field("Categoría", "combo", values=self.CATEGORIAS, default=defaults["categoria"])
         self.entry_edad = self._add_field("Edad", "entry", default=defaults["edad"])
@@ -147,8 +176,10 @@ class PersonajeDialog(_BaseDialog):
         self._add_foto_selector("📷 Foto del personaje", defaults["foto"])
 
         ctk.CTkButton(
-            self.scroll, text="Guardar", command=self._guardar,
-            fg_color="#2F4F4F", hover_color="#1f3333", corner_radius=15
+            self.scroll, text="Guardar 🌸", command=self._guardar,
+            fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"], corner_radius=15,
+            font=FONTS["heading"]
         ).pack(pady=20)
 
     def _guardar(self):
@@ -189,7 +220,7 @@ class CapituloDialog(_BaseDialog):
         self.db = db
         self.historia_id = historia_id
         self.capitulo_id = capitulo_id
-        title = "Editar Capítulo" if capitulo_id else "Nuevo Capítulo"
+        title = "✿ Editar Capítulo ✿" if capitulo_id else "✿ Nuevo Capítulo ✿"
         super().__init__(parent, title, "450x400")
 
         if capitulo_id:
@@ -198,11 +229,19 @@ class CapituloDialog(_BaseDialog):
         else:
             num = titulo = plot = ""
 
+        flower = ImageUtils.load_flower("card_accent.png", (40, 40))
+        if flower:
+            ctk.CTkLabel(self.scroll, image=flower, text="").pack(pady=(10, 5))
+
         self.entry_num = self._add_field("Número:", "entry", default=str(num))
         self.entry_titulo = self._add_field("Título:", "entry", default=titulo or "")
         self.entry_plot = self._add_field("Plot guía:", "text", default=plot or "")
 
-        ctk.CTkButton(self.scroll, text="Guardar", command=self._guardar, corner_radius=15).pack(pady=20)
+        ctk.CTkButton(
+            self.scroll, text="Guardar 🌸", command=self._guardar, corner_radius=15,
+            fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"], font=FONTS["heading"]
+        ).pack(pady=20)
 
     def _guardar(self):
         num = self.entry_num.get()
@@ -229,13 +268,21 @@ class ParteDialog(_BaseDialog):
         self.db = db
         self.capitulo_id = capitulo_id
         self.parte_id = parte_id
-        title = "Editar Parte" if parte_id else "Nueva Parte"
+        title = "✿ Editar Parte ✿" if parte_id else "✿ Nueva Parte ✿"
         super().__init__(parent, title, "400x300")
+
+        flower = ImageUtils.load_flower("card_accent.png", (35, 35))
+        if flower:
+            ctk.CTkLabel(self.scroll, image=flower, text="").pack(pady=(10, 5))
 
         self.entry_nombre = self._add_field("Nombre de la parte:", "entry", default=nombre)
         self.entry_cont = self._add_field("Contenido:", "text", default=contenido)
 
-        ctk.CTkButton(self.scroll, text="Guardar", command=self._guardar, corner_radius=15).pack(pady=15)
+        ctk.CTkButton(
+            self.scroll, text="Guardar 🌸", command=self._guardar, corner_radius=15,
+            fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"], font=FONTS["heading"]
+        ).pack(pady=15)
 
     def _guardar(self):
         nombre = self.entry_nombre.get()
@@ -264,20 +311,42 @@ class RelacionDialog(ctk.CTkToplevel):
         self.historia_id = historia_id
         self.p1_id = p1_id
         self.p2_id = p2_id
-        self.title("Tipo de conexión")
-        self.geometry("350x250")
+        self.title("✿ Tipo de conexión ✿")
+        self.geometry("350x280")
+        self.configure(fg_color=COLORS["bg_dialog"])
         self.grab_set()
 
         from config import RELATION_COLORS
 
-        ctk.CTkLabel(self, text="Conectar:", font=FONTS["heading"]).pack(pady=(15, 5))
-        ctk.CTkLabel(self, text=f"{nombres[0]}  →  {nombres[1]}", font=FONTS["heading"]).pack()
+        flower = ImageUtils.load_flower("card_accent.png", (50, 50))
+        if flower:
+            ctk.CTkLabel(self, image=flower, text="").pack(pady=(10, 5))
 
-        ctk.CTkLabel(self, text="Tipo de relación:", font=FONTS["heading"]).pack(pady=(15, 5))
-        self.combo = ctk.CTkOptionMenu(self, values=list(RELATION_COLORS.keys()), width=250)
+        ctk.CTkLabel(
+            self, text="Conectar:", font=FONTS["heading"],
+            text_color=COLORS["text_primary"]
+        ).pack(pady=(5, 5))
+        ctk.CTkLabel(
+            self, text=f"{nombres[0]}  →  {nombres[1]}",
+            font=FONTS["heading"], text_color=COLORS["accent"]
+        ).pack()
+
+        ctk.CTkLabel(
+            self, text="Tipo de relación:", font=FONTS["heading"],
+            text_color=COLORS["text_primary"]
+        ).pack(pady=(15, 5))
+        self.combo = ctk.CTkOptionMenu(
+            self, values=list(RELATION_COLORS.keys()), width=250,
+            fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
+            button_color=COLORS["btn_primary"], button_hover_color=COLORS["btn_hover"]
+        )
         self.combo.pack()
 
-        ctk.CTkButton(self, text="Conectar", command=self._guardar, corner_radius=15).pack(pady=20)
+        ctk.CTkButton(
+            self, text="Conectar 🌸", command=self._guardar, corner_radius=15,
+            fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
+            text_color=COLORS["text_light"], font=FONTS["heading"]
+        ).pack(pady=20)
 
     def _guardar(self):
         tipo = self.combo.get()
@@ -300,20 +369,34 @@ class FichaPersonajeDialog(ctk.CTkToplevel):
 
     def __init__(self, parent, db, personaje_id):
         super().__init__(parent)
-        self.title("Ficha de Personaje")
+        self.title("✿ Ficha de Personaje ✿")
         self.geometry("500x700")
+        self.configure(fg_color=COLORS["bg_dialog"])
         self.grab_set()
 
         p = db.obtener_uno("SELECT * FROM personajes WHERE id=?", (personaje_id,))
         if not p:
-            ctk.CTkLabel(self, text="Personaje no encontrado").pack(pady=20)
+            ctk.CTkLabel(self, text="Personaje no encontrado", text_color=COLORS["text_primary"]).pack(pady=20)
             return
+
+        # Decoración
+        flower = ImageUtils.load_flower("card_accent.png", (60, 60))
+        if flower:
+            ctk.CTkLabel(self, image=flower, text="").pack(pady=10)
 
         # p = (id, historia_id, nombre, categoria, edad, familia, historia_personal, trauma, plot_rol, guia_trama, foto_blob)
         img = ImageUtils.blob_a_ctkimage(p[10], (200, 200))
-        ctk.CTkLabel(self, image=img, text="").pack(pady=20)
-        ctk.CTkLabel(self, text=p[2], font=("Playfair Display", 24, "bold")).pack()
-        ctk.CTkLabel(self, text=f"Categoría: {p[3].capitalize()}  |  Edad: {p[4] or 'N/A'}", font=FONTS["body"]).pack()
+        ctk.CTkLabel(self, image=img, text="").pack(pady=10)
+        ctk.CTkLabel(
+            self, text=p[2], font=("Playfair Display", 24, "bold"),
+            text_color=COLORS["text_primary"]
+        ).pack()
+        ctk.CTkLabel(
+            self, text=f"Categoría: {p[3].capitalize()}  |  Edad: {p[4] or 'N/A'}",
+            font=FONTS["body"], text_color=COLORS["text_secondary"]
+        ).pack()
+
+        ImageUtils.add_divider(self, pady=10)
 
         campos = [
             ("Familia", p[5]), ("Historia", p[6]), ("Trauma", p[7]),
@@ -321,5 +404,16 @@ class FichaPersonajeDialog(ctk.CTkToplevel):
         ]
         for titulo, valor in campos:
             if valor:
-                ctk.CTkLabel(self, text=f"{titulo}:", font=FONTS["heading"], text_color="#722F37").pack(pady=(15, 3))
-                ctk.CTkLabel(self, text=valor, font=FONTS["body"], wraplength=450).pack()
+                ctk.CTkLabel(
+                    self, text=f"✿ {titulo}:", font=FONTS["heading"],
+                    text_color=COLORS["accent"]
+                ).pack(pady=(10, 2))
+                ctk.CTkLabel(
+                    self, text=valor, font=FONTS["body"],
+                    text_color=COLORS["text_secondary"], wraplength=450
+                ).pack()
+
+        # Flor al final
+        flower2 = ImageUtils.load_flower("card_accent.png", (50, 50))
+        if flower2:
+            ctk.CTkLabel(self, image=flower2, text="").pack(pady=15)
