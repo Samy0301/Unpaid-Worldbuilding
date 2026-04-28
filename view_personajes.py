@@ -38,10 +38,12 @@ class PersonajesView(ctk.CTkFrame):
             text_color=COLORS["text_light"]
         )
         self.tabview.pack(fill="both", expand=True)
-        ImageUtils.floral_divider(self, pady=10)
 
         for cat in self.CATEGORIAS:
             self.tabview.add(cat.capitalize())
+
+        # Separador floral debajo de tabs
+        ImageUtils.floral_divider(self, pady=10)
 
         ctk.CTkButton(
             self, text="+ Nuevo Personaje", command=self._crear,
@@ -90,7 +92,6 @@ class PersonajesView(ctk.CTkFrame):
             empty = ctk.CTkFrame(scroll, fg_color=COLORS["bg_card"], corner_radius=15,
                                 border_color=COLORS["border_card"], border_width=1)
             empty.pack(pady=30, padx=20)
-            ImageUtils.add_corner_flowers(empty, (50, 50))
             ctk.CTkLabel(
                 empty, text=f"No hay personajes {categoria}s aún",
                 font=FONTS["body"], text_color=COLORS["text_secondary"]
@@ -102,15 +103,11 @@ class PersonajesView(ctk.CTkFrame):
                 scroll, corner_radius=15, width=200, height=250,
                 fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=1
             )
-            ImageUtils.add_corner_accents(card, size=12, colors=[
-                COLORS["accent_soft"], COLORS["btn_accent"],
-                COLORS["btn_primary"], COLORS["accent"]
-            ])
-            ImageUtils.add_top_badge(card, COLORS["accent"], size=24)
             card.grid(row=i // 4, column=i % 4, padx=10, pady=10)
             card.grid_propagate(False)
 
-            ImageUtils.add_corner_flowers(card, (40, 40))
+            # Badge superior fucsia (sin esquinas)
+            ImageUtils.add_top_badge(card, COLORS["accent"], size=24)
 
             img = ImageUtils.blob_a_ctkimage(foto, (200, 150))
             ctk.CTkLabel(card, image=img, text="").pack(pady=(10, 0))
