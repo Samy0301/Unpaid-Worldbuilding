@@ -16,7 +16,6 @@ class DesarrolloView(ctk.CTkFrame):
         self.historia_id = historia_id
         self.pack(fill="both", expand=True)
 
-        # Header decorativo
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=10)
         ctk.CTkLabel(
@@ -37,6 +36,24 @@ class DesarrolloView(ctk.CTkFrame):
         self.lista_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.lista_frame.pack(fill="both", expand=True)
         self._refresh()
+
+    def _abrir_dialogo_embebido(self, DialogClass, *args, on_close=None, **kwargs):
+        overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
+        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        container = ctk.CTkFrame(
+            overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
+            border_color=COLORS["border_card"], border_width=2
+        )
+        container.place(relx=0.5, rely=0.5, anchor="center")
+
+        def _on_close():
+            overlay.destroy()
+            if on_close:
+                on_close()
+
+        dialog = DialogClass(container, *args, on_close=_on_close, **kwargs)
+        dialog.pack(fill="both", expand=True, padx=10, pady=10)
 
     def _refresh(self):
         for w in self.lista_frame.winfo_children():
@@ -100,14 +117,16 @@ class DesarrolloView(ctk.CTkFrame):
                 ).pack(padx=15, pady=(0, 10))
 
     def _crear(self):
-        dialog = CapituloDialog(self, self.db, self.historia_id)
-        self.wait_window(dialog)
-        self._refresh()
+        self._abrir_dialogo_embebido(
+            CapituloDialog, self.db, self.historia_id,
+            on_close=self._refresh
+        )
 
     def _editar(self, cid, num, titulo, plot):
-        dialog = CapituloDialog(self, self.db, self.historia_id, cid)
-        self.wait_window(dialog)
-        self._refresh()
+        self._abrir_dialogo_embebido(
+            CapituloDialog, self.db, self.historia_id, cid,
+            on_close=self._refresh
+        )
 
     def _borrar(self, cid, num):
         if messagebox.askyesno("Confirmar", f"¿Borrar el Capítulo {num}?"):
@@ -116,30 +135,44 @@ class DesarrolloView(ctk.CTkFrame):
             self._refresh()
 
     def _ver_partes(self, capitulo_id):
-        dialog = ctk.CTkToplevel(self)
-        dialog.title("Partes del Capítulo")
-        dialog.geometry("500x600")
-        dialog.configure(fg_color=COLORS["bg_dialog"])
-        dialog.grab_set()
+        overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
+        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
 
-        # Header decorativo
-        header = ctk.CTkFrame(dialog, fg_color="transparent")
+        container = ctk.CTkFrame(
+            overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
+            border_color=COLORS["border_card"], border_width=2,
+            width=520, height=620
+        )
+        container.place(relx=0.5, rely=0.5, anchor="center")
+        container.pack_propagate(False)
+
+        def _cerrar_overlay():
+            overlay.destroy()
+
+        header = ctk.CTkFrame(container, fg_color="transparent")
         header.pack(fill="x", padx=10, pady=10)
         ctk.CTkLabel(
             header, text="✿ Partes del Capítulo ✿", font=FONTS["subtitle"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
         ctk.CTkButton(
+            header, text="✕", width=28, height=28, corner_radius=14,
+            command=_cerrar_overlay, fg_color=COLORS["danger"],
+            hover_color=COLORS["danger_hover"], text_color=COLORS["text_light"],
+            font=FONTS["caption"]
+        ).pack(side="right")
+
+        ctk.CTkButton(
             header, text="+ Añadir Parte",
             command=lambda: self._crear_parte(scroll, capitulo_id),
             corner_radius=15,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"]
-        ).pack(side="right")
+        ).pack(side="right", padx=10)
 
-        ImageUtils.add_divider(dialog, pady=5)
+        ImageUtils.add_divider(container, pady=5)
 
-        scroll = ctk.CTkScrollableFrame(dialog, fg_color="transparent")
+        scroll = ctk.CTkScrollableFrame(container, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10)
 
         self._render_partes(scroll, capitulo_id)
@@ -183,14 +216,16 @@ class DesarrolloView(ctk.CTkFrame):
             ).pack(anchor="w", padx=10, pady=(0, 10))
 
     def _crear_parte(self, scroll, capitulo_id):
-        d = ParteDialog(self, self.db, capitulo_id)
-        self.wait_window(d)
-        self._render_partes(scroll, capitulo_id)
+        self._abrir_dialogo_embebido(
+            ParteDialog, self.db, capitulo_id,
+            on_close=lambda: self._render_partes(scroll, capitulo_id)
+        )
 
     def _editar_parte(self, scroll, capitulo_id, pid, nombre, contenido):
-        d = ParteDialog(self, self.db, capitulo_id, pid, nombre, contenido)
-        self.wait_window(d)
-        self._render_partes(scroll, capitulo_id)
+        self._abrir_dialogo_embebido(
+            ParteDialog, self.db, capitulo_id, pid, nombre, contenido,
+            on_close=lambda: self._render_partes(scroll, capitulo_id)
+        )
 
     def _borrar_parte(self, scroll, capitulo_id, pid, nombre):
         if messagebox.askyesno("Confirmar", f"¿Borrar la parte '{nombre}'?"):

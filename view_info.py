@@ -16,6 +16,24 @@ class InfoHistoriaView(ctk.CTkFrame):
         self.pack(fill="both", expand=True)
         self._build()
 
+    def _abrir_dialogo_embebido(self, DialogClass, *args, on_close=None, **kwargs):
+        overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
+        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        container = ctk.CTkFrame(
+            overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
+            border_color=COLORS["border_card"], border_width=2
+        )
+        container.place(relx=0.5, rely=0.5, anchor="center")
+
+        def _on_close():
+            overlay.destroy()
+            if on_close:
+                on_close()
+
+        dialog = DialogClass(container, *args, on_close=_on_close, **kwargs)
+        dialog.pack(fill="both", expand=True, padx=10, pady=10)
+
     def _build(self):
         for w in self.winfo_children():
             w.destroy()
@@ -24,7 +42,6 @@ class InfoHistoriaView(ctk.CTkFrame):
                         border_color=COLORS["border_card"], border_width=2)
         f.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Flores en esquinas
         ImageUtils.add_corner_flowers(f, (60, 60))
 
         top = ctk.CTkFrame(f, fg_color="transparent")
@@ -36,7 +53,6 @@ class InfoHistoriaView(ctk.CTkFrame):
             text_color=COLORS["text_light"]
         ).pack(side="right")
 
-        # Separador floral
         ImageUtils.add_divider(f, pady=10)
 
         img = ImageUtils.blob_a_ctkimage(self.hv.h_foto, (300, 300))
@@ -47,7 +63,6 @@ class InfoHistoriaView(ctk.CTkFrame):
             text_color=COLORS["text_primary"]
         ).pack()
 
-        # Subtítulo decorativo
         ctk.CTkLabel(
             f, text="✿ Resumen ✿", font=FONTS["script"],
             text_color=COLORS["accent"]
@@ -68,13 +83,12 @@ class InfoHistoriaView(ctk.CTkFrame):
             text_color=COLORS["text_secondary"], wraplength=600
         ).pack()
 
-        # Flor decorativa al final
         flower = ImageUtils.load_flower("card_accent.png", (70, 70))
         if flower:
             ctk.CTkLabel(f, image=flower, text="").pack(pady=20)
 
     def _editar(self):
-        dialog = HistoriaDialog(self, self.db, self.hv.historia_id)
-        self.wait_window(dialog)
-        self.hv.recargar_datos()
-        self._build()
+        self._abrir_dialogo_embebido(
+            HistoriaDialog, self.db, self.hv.historia_id,
+            on_close=lambda: (self.hv.recargar_datos(), self._build())
+        )

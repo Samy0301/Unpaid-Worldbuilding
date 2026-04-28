@@ -22,7 +22,6 @@ class DashboardView(ctk.CTkFrame):
 
         ctk.CTkLabel(header, text="📚 Mis Novelas", font=FONTS["title"], text_color=COLORS["text_primary"]).pack(side="left")
 
-        # Flor decorativa en header
         flower = ImageUtils.load_flower("card_accent.png", (50, 50))
         if flower:
             ctk.CTkLabel(header, image=flower, text="").pack(side="left", padx=10)
@@ -34,20 +33,36 @@ class DashboardView(ctk.CTkFrame):
             text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(side="right")
 
-        # Separador floral
         ImageUtils.add_divider(self, pady=5)
 
-        # Subtítulo decorativo
         ctk.CTkLabel(
             self, text="✿  Cada historia es una flor que espera florecer  ✿",
             font=FONTS["script"], text_color=COLORS["btn_hover"]
         ).pack(pady=(0, 10))
 
-        # Grid scrollable
         self.grid_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
         self._cargar_historias()
+
+    def _abrir_dialogo_embebido(self, DialogClass, *args, on_close=None, **kwargs):
+        """Muestra un diálogo como panel centrado sobre esta vista."""
+        overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
+        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        container = ctk.CTkFrame(
+            overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
+            border_color=COLORS["border_card"], border_width=2
+        )
+        container.place(relx=0.5, rely=0.5, anchor="center")
+
+        def _on_close():
+            overlay.destroy()
+            if on_close:
+                on_close()
+
+        dialog = DialogClass(container, *args, on_close=_on_close, **kwargs)
+        dialog.pack(fill="both", expand=True, padx=10, pady=10)
 
     def _cargar_historias(self):
         for widget in self.grid_frame.winfo_children():
@@ -75,7 +90,6 @@ class DashboardView(ctk.CTkFrame):
             card.grid(row=i // 3, column=i % 3, padx=15, pady=15, sticky="nsew")
             card.grid_propagate(False)
 
-            # Flores en esquinas de la tarjeta
             ImageUtils.add_corner_flowers(card, (50, 50))
 
             img = ImageUtils.blob_a_ctkimage(foto, (CARD_WIDTH, 180))
@@ -108,9 +122,10 @@ class DashboardView(ctk.CTkFrame):
             ).pack(side="left", padx=5)
 
     def _crear_historia(self):
-        dialog = HistoriaDialog(self, self.db)
-        self.wait_window(dialog)
-        self._cargar_historias()
+        self._abrir_dialogo_embebido(
+            HistoriaDialog, self.db,
+            on_close=self._cargar_historias
+        )
 
     def _borrar_historia(self, hid, nombre):
         if messagebox.askyesno("Confirmar", f"¿Borrar '{nombre}' y todo su contenido?"):
