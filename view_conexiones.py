@@ -18,10 +18,8 @@ class ConexionesView(ctk.CTkFrame):
         self.historia_id = historia_id
         self.pack(fill="both", expand=True)
 
-        # ─── Estado del modo ───
         self.modo = "mover"
 
-        # ─── Header ───
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=5, padx=10)
         ctk.CTkLabel(
@@ -54,7 +52,6 @@ class ConexionesView(ctk.CTkFrame):
             text_color=COLORS["text_light"]
         ).pack(side="right", padx=5)
 
-        # ─── Leyenda ───
         leyenda = ctk.CTkFrame(self, fg_color="transparent")
         leyenda.pack(fill="x", padx=10)
         for tipo, color in RELATION_COLORS.items():
@@ -69,19 +66,16 @@ class ConexionesView(ctk.CTkFrame):
         )
         self.lbl_ayuda.pack(side="left", padx=20)
 
-        # ─── Canvas con fondo floral ───
         canvas_frame = ctk.CTkFrame(self, fg_color=COLORS["bg_card"],
-                                     border_color=COLORS["border_card"], border_width=2)
+                                    border_color=COLORS["border_card"], border_width=2)
         canvas_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
         self.canvas = tk.Canvas(canvas_frame, bg="#FFF8F5", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
 
-        # Fondo floral sutil
         self._fondo_floral = None
         self._cargar_fondo_floral()
 
-        # ─── Estado de interacción ───
         self.nodos = {}
         self.conexiones = []
         self._drag = {"nodo": None, "ox": 0, "oy": 0, "linea_temp": None}
@@ -94,17 +88,32 @@ class ConexionesView(ctk.CTkFrame):
 
         self._cargar_datos()
 
+    def _abrir_dialogo_embebido(self, DialogClass, *args, on_close=None, **kwargs):
+        overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
+        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        container = ctk.CTkFrame(
+            overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
+            border_color=COLORS["border_card"], border_width=2
+        )
+        container.place(relx=0.5, rely=0.5, anchor="center")
+
+        def _on_close():
+            overlay.destroy()
+            if on_close:
+                on_close()
+
+        dialog = DialogClass(container, *args, on_close=_on_close, **kwargs)
+        dialog.pack(fill="both", expand=True, padx=10, pady=10)
+
     def _cargar_fondo_floral(self):
-        """Carga el fondo floral en el canvas."""
         try:
             from PIL import ImageTk
             img = ImageUtils.load_flower("canvas_bg.png")
             if img:
-                # Obtener tamaño del canvas
                 self.canvas.update_idletasks()
                 w = self.canvas.winfo_width() or 800
                 h = self.canvas.winfo_height() or 600
-                # Redimensionar fondo al canvas
                 from PIL import Image
                 pil_img = Image.open(os.path.join(FLOWERS_DIR, "canvas_bg.png"))
                 pil_img = pil_img.resize((w, h), Image.LANCZOS)
@@ -113,8 +122,6 @@ class ConexionesView(ctk.CTkFrame):
                 self.canvas.tag_lower("fondo")
         except Exception:
             pass
-
-    # ─── Toggle de modo ───
 
     def _toggle_modo(self):
         if self.modo == "mover":
@@ -138,14 +145,11 @@ class ConexionesView(ctk.CTkFrame):
             )
             self.canvas.configure(cursor="")
 
-    # ─── Carga inicial ───
-
     def _cargar_datos(self):
         self.canvas.delete("all")
         self.nodos.clear()
         self.conexiones.clear()
 
-        # Restaurar fondo
         if self._fondo_floral:
             self.canvas.create_image(0, 0, image=self._fondo_floral, anchor="nw", tags="fondo")
             self.canvas.tag_lower("fondo")
@@ -174,7 +178,6 @@ class ConexionesView(ctk.CTkFrame):
         foto_tk = ImageUtils.blob_a_tkimage(foto_blob)
         r = NODE_RADIUS
 
-        # Círculo con borde rosa
         circulo = self.canvas.create_oval(
             x - r, y - r, x + r, y + r,
             fill="#FFF0F5", outline="#D4A5A5", width=3, tags=f"nodo_{pid}"
@@ -194,8 +197,6 @@ class ConexionesView(ctk.CTkFrame):
             "x": x, "y": y, "items": [circulo, imagen, texto, hit],
             "foto_tk": foto_tk, "nombre": nombre
         }
-
-    # ─── Geometría de conexiones ───
 
     def _coords_conexion(self, p1, p2):
         x1, y1 = self.nodos[p1]["x"], self.nodos[p1]["y"]
@@ -248,8 +249,6 @@ class ConexionesView(ctk.CTkFrame):
         for rid, p1, p2, tipo in rels:
             if p1 in self.nodos and p2 in self.nodos:
                 self._dibujar_conexion(rid, p1, p2, tipo)
-
-    # ─── Interacción ───
 
     def _nodo_en_coords(self, x, y):
         items = self.canvas.find_overlapping(x - 5, y - 5, x + 5, y + 5)
@@ -320,19 +319,16 @@ class ConexionesView(ctk.CTkFrame):
         self._drag = {"nodo": None, "ox": 0, "oy": 0, "linea_temp": None}
 
     def _preguntar_tipo(self, p1, p2):
-        dialog = RelacionDialog(
-            self, self.db, self.historia_id, p1, p2,
-            (self.nodos[p1]["nombre"], self.nodos[p2]["nombre"])
+        self._abrir_dialogo_embebido(
+            RelacionDialog, self.db, self.historia_id, p1, p2,
+            (self.nodos[p1]["nombre"], self.nodos[p2]["nombre"]),
+            on_close=self._redibujar_conexiones
         )
-        self.wait_window(dialog)
-        self._redibujar_conexiones()
-
-    # ─── Doble clic y menú contextual ───
 
     def _on_double_click(self, event):
         pid = self._nodo_en_coords(event.x, event.y)
         if pid:
-            FichaPersonajeDialog(self, self.db, pid)
+            self._abrir_dialogo_embebido(FichaPersonajeDialog, self.db, pid)
 
     def _on_right_click(self, event):
         items = self.canvas.find_overlapping(event.x - 8, event.y - 8, event.x + 8, event.y + 8)
@@ -359,7 +355,7 @@ class ConexionesView(ctk.CTkFrame):
 
     def _menu_nodo(self, x, y, pid):
         menu = Menu(self, tearoff=0, bg="#FFF0F5", fg="#5D4037", activebackground="#FFB6C1")
-        menu.add_command(label="👁 Ver ficha", command=lambda: FichaPersonajeDialog(self, self.db, pid))
+        menu.add_command(label="👁 Ver ficha", command=lambda: self._abrir_dialogo_embebido(FichaPersonajeDialog, self.db, pid))
         menu.add_command(label="🗑 Quitar del mapa", command=lambda: self._quitar_nodo(pid))
         menu.tk_popup(x, y)
 
@@ -374,17 +370,36 @@ class ConexionesView(ctk.CTkFrame):
         )
         self._cargar_datos()
 
-    # ─── Añadir personajes al mapa ───
-
     def _mostrar_picker(self):
-        dialog = ctk.CTkToplevel(self)
-        dialog.title("Añadir personajes al mapa")
-        dialog.geometry("400x400")
-        dialog.configure(fg_color=COLORS["bg_dialog"])
-        dialog.grab_set()
+        overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
+        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
 
-        scroll = ctk.CTkScrollableFrame(dialog, fg_color="transparent")
+        container = ctk.CTkFrame(
+            overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
+            border_color=COLORS["border_card"], border_width=2,
+            width=420, height=450
+        )
+        container.place(relx=0.5, rely=0.5, anchor="center")
+        container.pack_propagate(False)
+
+        def _cerrar():
+            overlay.destroy()
+
+        scroll = ctk.CTkScrollableFrame(container, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=10)
+
+        header = ctk.CTkFrame(container, fg_color="transparent")
+        header.pack(fill="x", padx=10, pady=(10, 0))
+        ctk.CTkLabel(
+            header, text="Añadir personajes al mapa", font=FONTS["heading"],
+            text_color=COLORS["text_primary"]
+        ).pack(side="left")
+        ctk.CTkButton(
+            header, text="✕", width=28, height=28, corner_radius=14,
+            command=_cerrar, fg_color=COLORS["danger"],
+            hover_color=COLORS["danger_hover"], text_color=COLORS["text_light"],
+            font=FONTS["caption"]
+        ).pack(side="right")
 
         personajes = self.db.obtener("""
             SELECT id, nombre, foto_blob FROM personajes
@@ -416,10 +431,10 @@ class ConexionesView(ctk.CTkFrame):
             ctk.CTkButton(
                 row, text="➕", width=40, corner_radius=8,
                 fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
-                command=lambda p=pid: self._add_personaje(dialog, p)
+                command=lambda p=pid: self._add_personaje(overlay, p)
             ).pack(side="right")
 
-    def _add_personaje(self, dialog, pid):
+    def _add_personaje(self, overlay, pid):
         count = len(self.nodos)
         x = 150 + (count % 4) * 180
         y = 150 + (count // 4) * 180
@@ -427,7 +442,7 @@ class ConexionesView(ctk.CTkFrame):
             "INSERT OR REPLACE INTO posiciones_nodos (historia_id, personaje_id, x, y) VALUES (?, ?, ?, ?)",
             (self.historia_id, pid, x, y)
         )
-        dialog.destroy()
+        overlay.destroy()
         self._cargar_datos()
 
     def _guardar_posiciones(self):
