@@ -66,9 +66,17 @@ class ConexionesView(ctk.CTkFrame):
         )
         self.lbl_ayuda.pack(side="left", padx=20)
 
-        canvas_frame = ctk.CTkFrame(self, fg_color=COLORS["bg_card"],
+                # Marco decorativo exterior (rosa vibrante suave)
+        outer_frame = ctk.CTkFrame(
+            self, fg_color=COLORS["accent_soft"], corner_radius=18,
+            border_color=COLORS["accent"], border_width=2
+        )
+        outer_frame.pack(fill="both", expand=True, padx=8, pady=8)
+
+        canvas_frame = ctk.CTkFrame(outer_frame, fg_color=COLORS["bg_card"],
                                     border_color=COLORS["border_card"], border_width=2)
-        canvas_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        canvas_frame.pack(fill="both", expand=True, padx=6, pady=6)
+        
 
         self.canvas = tk.Canvas(canvas_frame, bg="#FFF8F5", highlightthickness=0)
         self.canvas.pack(fill="both", expand=True)
@@ -180,7 +188,7 @@ class ConexionesView(ctk.CTkFrame):
 
         circulo = self.canvas.create_oval(
             x - r, y - r, x + r, y + r,
-            fill="#FFF0F5", outline="#D4A5A5", width=3, tags=f"nodo_{pid}"
+            fill="#FFF0F5", outline="#E91E63", width=3, tags=f"nodo_{pid}"  # borde fucsia
         )
         imagen = self.canvas.create_image(x, y, image=foto_tk, tags=f"nodo_{pid}")
         texto = self.canvas.create_text(

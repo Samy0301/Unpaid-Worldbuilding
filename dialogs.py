@@ -29,6 +29,11 @@ class _BaseDialog(ctk.CTkFrame):
             ).pack(side="right", padx=5)
 
         self.scroll = ctk.CTkScrollableFrame(self, fg_color="transparent")
+                # Esquinas decorativas en el diálogo
+        ImageUtils.add_corner_accents(self, size=16, colors=[
+            COLORS["btn_accent"], COLORS["accent"],
+            COLORS["accent_soft"], COLORS["btn_primary"]
+        ])
         self.scroll.pack(fill="both", expand=True, padx=10, pady=10)
 
         self._foto_blob = None

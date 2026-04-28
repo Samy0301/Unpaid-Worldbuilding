@@ -38,6 +38,7 @@ class PersonajesView(ctk.CTkFrame):
             text_color=COLORS["text_light"]
         )
         self.tabview.pack(fill="both", expand=True)
+        ImageUtils.floral_divider(self, pady=10)
 
         for cat in self.CATEGORIAS:
             self.tabview.add(cat.capitalize())
@@ -101,6 +102,11 @@ class PersonajesView(ctk.CTkFrame):
                 scroll, corner_radius=15, width=200, height=250,
                 fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=1
             )
+            ImageUtils.add_corner_accents(card, size=12, colors=[
+                COLORS["accent_soft"], COLORS["btn_accent"],
+                COLORS["btn_primary"], COLORS["accent"]
+            ])
+            ImageUtils.add_top_badge(card, COLORS["accent"], size=24)
             card.grid(row=i // 4, column=i % 4, padx=10, pady=10)
             card.grid_propagate(False)
 

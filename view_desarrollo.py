@@ -76,19 +76,27 @@ class DesarrolloView(ctk.CTkFrame):
             return
 
         for cid, num, titulo, plot in caps:
+            # Card contenedor
             card = ctk.CTkFrame(
                 self.lista_frame, corner_radius=15,
                 fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=1
             )
             card.pack(fill="x", pady=8, padx=5)
-            ImageUtils.add_corner_flowers(card, (35, 35))
 
-            header = ctk.CTkFrame(card, fg_color="transparent")
-            header.pack(fill="x", padx=15, pady=10)
-            ctk.CTkLabel(
-                header, text=f"Cap. {num}: {titulo}", font=FONTS["heading"],
-                text_color=COLORS["text_primary"]
-            ).pack(side="left")
+            # ── Acento lateral vibrante (rosa fucsia) ──
+            accent_bar = ctk.CTkFrame(card, fg_color=COLORS["accent"], width=5, corner_radius=3)
+            accent_bar.pack(side="left", fill="y", padx=(4, 0), pady=6)
+            accent_bar.pack_propagate(False)
+
+            # Contenido interno (para que el resto del código no cambie)
+            inner = ctk.CTkFrame(card, fg_color=COLORS["bg_card"], corner_radius=0)
+            inner.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+
+            ImageUtils.add_corner_accents(card, size=12)
+            ImageUtils.floral_divider(inner, pady=6)
+
+            header = ctk.CTkFrame(inner, fg_color="transparent")
+            header.pack(fill="x")
 
             btns = ctk.CTkFrame(header, fg_color="transparent")
             btns.pack(side="right")

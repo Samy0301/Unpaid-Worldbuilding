@@ -45,6 +45,19 @@ class HistoriaView(ctk.CTkFrame):
             font=FONTS["heading"], wraplength=180, text_color=COLORS["text_primary"]
         )
         self._lbl_nombre.pack(pady=(0, 30))
+                # Marco decorativo alrededor del nombre
+        name_frame = ctk.CTkFrame(
+            self.sidebar, fg_color=COLORS["bg_card"],
+            corner_radius=12, border_color=COLORS["border_card"], border_width=2
+        )
+        name_frame.pack(pady=(0, 20), padx=10)
+        self._lbl_nombre.pack_forget()
+        self._lbl_nombre = ctk.CTkLabel(
+            name_frame,
+            text=self._truncate(self.h_nombre, 15),
+            font=FONTS["heading"], wraplength=160, text_color=COLORS["text_primary"]
+        )
+        self._lbl_nombre.pack(padx=10, pady=8)
 
         # Separador floral en sidebar
         ImageUtils.add_divider(self.sidebar, pady=5)
@@ -70,6 +83,14 @@ class HistoriaView(ctk.CTkFrame):
                 fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
                 text_color=COLORS["text_light"], font=FONTS["body"]
             ).pack(pady=5)
+
+                # Separadores florales entre botones (vibrantes pero rosas/amarillos)
+        for _ in range(3):
+            sep = ctk.CTkLabel(
+                self.sidebar, text="· ✿ ·",
+                font=("Segoe Script", 16), text_color=COLORS["accent_soft"]
+            )
+            sep.pack(pady=2)
 
         # Flor decorativa al final del sidebar
         flower = ImageUtils.load_flower("card_accent.png", (60, 60))

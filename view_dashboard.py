@@ -75,7 +75,6 @@ class DashboardView(ctk.CTkFrame):
         if not historias:
             frame_empty = ctk.CTkFrame(self.grid_frame, fg_color=COLORS["bg_card"], corner_radius=20)
             frame_empty.pack(pady=50, padx=20)
-            ImageUtils.add_corner_flowers(frame_empty, (60, 60))
             ctk.CTkLabel(
                 frame_empty, text="No hay historias aún.\n¡Crea la primera!",
                 font=FONTS["body"], text_color=COLORS["text_secondary"]
@@ -90,7 +89,8 @@ class DashboardView(ctk.CTkFrame):
             card.grid(row=i // 3, column=i % 3, padx=15, pady=15, sticky="nsew")
             card.grid_propagate(False)
 
-            ImageUtils.add_corner_flowers(card, (50, 50))
+            # Badge superior amarillo (sin flores en esquinas)
+            ImageUtils.add_top_badge(card, COLORS["btn_accent"], size=28)
 
             img = ImageUtils.blob_a_ctkimage(foto, (CARD_WIDTH, 180))
             ctk.CTkLabel(card, image=img, text="").pack(fill="x", pady=(10, 0))

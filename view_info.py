@@ -43,6 +43,8 @@ class InfoHistoriaView(ctk.CTkFrame):
         f.pack(fill="both", expand=True, padx=10, pady=10)
 
         ImageUtils.add_corner_flowers(f, (60, 60))
+        ImageUtils.add_top_badge(f, COLORS["btn_accent"], size=32)
+        ImageUtils.floral_divider(f, pady=12)
 
         top = ctk.CTkFrame(f, fg_color="transparent")
         top.pack(fill="x", padx=20, pady=(20, 0))
