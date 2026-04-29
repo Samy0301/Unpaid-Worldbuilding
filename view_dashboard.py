@@ -36,7 +36,7 @@ class DashboardView(ctk.CTkFrame):
         ImageUtils.add_divider(self, pady=5)
 
         ctk.CTkLabel(
-            self, text="✿  Cada historia es una flor que espera florecer  ✿",
+            self, text="✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿",
             font=FONTS["script"], text_color=COLORS["btn_hover"]
         ).pack(pady=(0, 10))
 
