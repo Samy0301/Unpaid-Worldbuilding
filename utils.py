@@ -18,6 +18,39 @@ class ImageUtils:
         img = ImageUtils.recortar_cuadrado(img)
         img = img.resize(size, Image.LANCZOS)
         return ctk.CTkImage(light_image=img, dark_image=img, size=size)
+    
+    @staticmethod
+    def blob_a_ctkimage_rounded(blob, size=(150, 150), radius=15, top_only=False):
+        """
+        Convierte un BLOB en CTkImage con esquinas redondeadas.
+        Si top_only=True, solo redondea las esquinas superiores (ideal para portadas de tarjetas).
+        """
+        if not blob:
+            # Imagen por defecto si no hay foto
+            img = Image.new("RGBA", size, "#FFF0F5")
+            draw = ImageDraw.Draw(img)
+            fill = "#FFF0F5"
+        else:
+            img = Image.open(io.BytesIO(blob)).convert("RGBA")
+            img = img.resize(size, Image.LANCZOS)
+
+        # Crear máscara redondeada
+        mask = Image.new("L", size, 0)
+        draw = ImageDraw.Draw(mask)
+        w, h = size
+
+        if top_only:
+            # Redondea solo arriba: dibujamos un rectángulo redondeado más alto y lo cortamos
+            draw.rounded_rectangle([0, 0, w, h + radius], radius=radius, fill=255)
+        else:
+            draw.rounded_rectangle([0, 0, w, h], radius=radius, fill=255)
+
+        # Aplicar máscara de transparencia
+        if img.mode != "RGBA":
+            img = img.convert("RGBA")
+        img.putalpha(mask)
+
+        return ctk.CTkImage(light_image=img, dark_image=img, size=size)
 
     @staticmethod
     def archivo_a_blob(ruta: str, max_size=(400, 400)):

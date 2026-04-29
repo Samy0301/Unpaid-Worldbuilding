@@ -92,8 +92,15 @@ class DashboardView(ctk.CTkFrame):
 
             ImageUtils.add_corner_flowers(card, (50, 50))
 
-            img = ImageUtils.blob_a_ctkimage(foto, (CARD_WIDTH, 180))
-            ctk.CTkLabel(card, image=img, text="").pack(fill="x", pady=(10, 0))
+            # Tamaño ajustado al ancho interior de la tarjeta (restando el borde de 2px por lado)
+            img_w = CARD_WIDTH - 4
+            img_h = 180
+            img = ImageUtils.blob_a_ctkimage_rounded(
+                foto, size=(img_w, img_h), radius=13, top_only=True
+            )
+            ctk.CTkLabel(
+                card, image=img, text="", fg_color="transparent"
+            ).pack(fill="x", pady=(2, 0))
 
             ctk.CTkLabel(
                 card, text=nombre, font=FONTS["heading"],
