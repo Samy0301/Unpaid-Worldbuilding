@@ -174,6 +174,10 @@ class ConexionesView(ctk.CTkFrame):
             if p1 in self.nodos and p2 in self.nodos:
                 self._dibujar_conexion(rid, p1, p2, tipo)
 
+        # ─── NUEVO: Elevar los textos de los nodos por encima de las líneas ───
+        for pid in self.nodos:
+            self.canvas.tag_raise(f"nodo_{pid}")
+
     def _crear_nodo(self, pid, nombre, foto_blob, x, y):
         foto_tk = ImageUtils.blob_a_tkimage(foto_blob)
         r = NODE_RADIUS
@@ -249,6 +253,10 @@ class ConexionesView(ctk.CTkFrame):
         for rid, p1, p2, tipo in rels:
             if p1 in self.nodos and p2 in self.nodos:
                 self._dibujar_conexion(rid, p1, p2, tipo)
+
+        # ─── NUEVO: Elevar los nodos por encima de las líneas recién dibujadas ───
+        for pid in self.nodos:
+            self.canvas.tag_raise(f"nodo_{pid}")
 
     def _nodo_en_coords(self, x, y):
         items = self.canvas.find_overlapping(x - 5, y - 5, x + 5, y + 5)
