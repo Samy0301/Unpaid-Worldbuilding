@@ -42,9 +42,6 @@ class PersonajesView(ctk.CTkFrame):
         for cat in self.CATEGORIAS:
             self.tabview.add(cat.capitalize())
 
-        # Separador floral debajo de tabs
-        ImageUtils.floral_divider(self, pady=10)
-
         ctk.CTkButton(
             self, text="+ Nuevo Personaje", command=self._crear,
             corner_radius=15,
@@ -92,6 +89,7 @@ class PersonajesView(ctk.CTkFrame):
             empty = ctk.CTkFrame(scroll, fg_color=COLORS["bg_card"], corner_radius=15,
                                 border_color=COLORS["border_card"], border_width=1)
             empty.pack(pady=30, padx=20)
+            ImageUtils.add_corner_flowers(empty, (50, 50))
             ctk.CTkLabel(
                 empty, text=f"No hay personajes {categoria}s aún",
                 font=FONTS["body"], text_color=COLORS["text_secondary"]
@@ -106,8 +104,7 @@ class PersonajesView(ctk.CTkFrame):
             card.grid(row=i // 4, column=i % 4, padx=10, pady=10)
             card.grid_propagate(False)
 
-            # Badge superior fucsia (sin esquinas)
-            ImageUtils.add_top_badge(card, COLORS["accent"], size=24)
+            ImageUtils.add_corner_flowers(card, (40, 40))
 
             img = ImageUtils.blob_a_ctkimage(foto, (200, 150))
             ctk.CTkLabel(card, image=img, text="").pack(pady=(10, 0))

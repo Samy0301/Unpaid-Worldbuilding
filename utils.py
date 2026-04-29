@@ -104,36 +104,3 @@ class ImageUtils:
             lbl.pack(pady=pady)
             return lbl
         return None
-
-        # ─── Decoraciones con la paleta actual ───
-
-    @staticmethod
-    def hex_to_rgba(hex_color: str, alpha=255):
-        h = hex_color.lstrip('#')
-        return tuple(int(h[i:i+2], 16) for i in (0, 2, 4)) + (alpha,)
-
-    @staticmethod
-    def draw_circle_badge(size: int, fill_hex: str, border_hex: str = None):
-        """Círculo decorativo para badges superiores."""
-        img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        fill = ImageUtils.hex_to_rgba(fill_hex, 200)
-        border = ImageUtils.hex_to_rgba(border_hex or fill_hex, 255)
-        draw.ellipse([2, 2, size-2, size-2], fill=fill, outline=border, width=2)
-        return ctk.CTkImage(light_image=img, dark_image=img, size=(size, size))
-
-    @staticmethod
-    def add_top_badge(parent, color: str, size=26):
-        """Flor circular que sobresale por la parte superior de una card."""
-        badge = ImageUtils.draw_circle_badge(size, color)
-        lbl = ctk.CTkLabel(parent, image=badge, text="")
-        lbl.place(relx=0.5, rely=0, anchor="n", y=-size//2)
-
-    @staticmethod
-    def floral_divider(parent, pady=8):
-        """Línea con flores a los lados usando solo la paleta rosa/amarilla."""
-        f = ctk.CTkFrame(parent, fg_color="transparent")
-        f.pack(pady=pady, fill="x")
-        ctk.CTkLabel(f, text="✿", font=("Segoe UI", 14), text_color="#F4D03F").pack(side="left", padx=5)
-        ctk.CTkFrame(f, height=2, fg_color="#FFB6C1").pack(side="left", fill="x", expand=True)
-        ctk.CTkLabel(f, text="✿", font=("Segoe UI", 14), text_color="#E91E63").pack(side="left", padx=5)
