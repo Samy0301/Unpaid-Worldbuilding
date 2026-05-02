@@ -1,4 +1,4 @@
-"""Contenedor principal de una historia con sidebar de navegación - Tema Jardín."""
+"""Contenedor principal de una historia con sidebar de navegación - Tema Otoñal."""
 
 import customtkinter as ctk
 from config import FONTS, COLORS
@@ -19,26 +19,22 @@ class HistoriaView(ctk.CTkFrame):
         self.historia_id = historia_id
         self.pack(fill="both", expand=True)
 
-        # Datos de la historia
         row = self.db.obtener_uno(
             "SELECT nombre, resumen, plot_general, foto_blob FROM historias WHERE id=?",
             (historia_id,)
         )
         self.h_nombre, self.h_resumen, self.h_plot, self.h_foto = row
 
-        # Sidebar con fondo floral
         self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0, fg_color=COLORS["bg_sidebar"])
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        # Fondo floral del sidebar
         sidebar_bg = ImageUtils.load_flower("sidebar_bg.png", (200, 800))
         if sidebar_bg:
             bg_lbl = ctk.CTkLabel(self.sidebar, image=sidebar_bg, text="")
             bg_lbl.place(relwidth=1, relheight=1)
 
-        # Contenido del sidebar (encima del fondo)
-        ctk.CTkLabel(self.sidebar, text="🌸", font=("Segoe UI", 40)).pack(pady=(30, 10))
+        ctk.CTkLabel(self.sidebar, text="🍂", font=("Segoe UI", 40)).pack(pady=(30, 10))
         self._lbl_nombre = ctk.CTkLabel(
             self.sidebar,
             text=self._truncate(self.h_nombre, 15),
@@ -46,7 +42,6 @@ class HistoriaView(ctk.CTkFrame):
         )
         self._lbl_nombre.pack(pady=(0, 30))
 
-        # Separador floral en sidebar
         ImageUtils.add_divider(self.sidebar, pady=5)
 
         self.content = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
@@ -55,11 +50,11 @@ class HistoriaView(ctk.CTkFrame):
         self._current_subview = None
 
         botones = [
-            ("🏠 Info", "info"),
-            ("👤 Personajes", "personajes"),
-            ("🕸️ Conexiones", "conexiones"),
-            ("📝 Desarrollo", "desarrollo"),
-            ("⬅ Volver", "dashboard"),
+            ("🏠 Info 🍁", "info"),
+            ("👤 Personajes 🦋", "personajes"),
+            ("🕸️ Conexiones 🍂", "conexiones"),
+            ("📝 Desarrollo 🌻", "desarrollo"),
+            ("⬅ Volver 🌄", "dashboard"),
         ]
 
         for texto, destino in botones:
@@ -71,7 +66,6 @@ class HistoriaView(ctk.CTkFrame):
                 text_color=COLORS["text_light"], font=FONTS["body"]
             ).pack(pady=5)
 
-        # Flor decorativa al final del sidebar
         flower = ImageUtils.load_flower("card_accent.png", (60, 60))
         if flower:
             ctk.CTkLabel(self.sidebar, image=flower, text="").pack(pady=(20, 10))

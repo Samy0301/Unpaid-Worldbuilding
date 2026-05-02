@@ -1,4 +1,4 @@
-"""Utilidades de imágenes y UI - Tema Jardín."""
+"""Utilidades de imágenes y UI - Tema Otoñal."""
 
 import io
 import os
@@ -8,7 +8,7 @@ from config import FLOWERS_DIR
 
 
 class ImageUtils:
-    """Manejo de imágenes para avatares, portadas, nodos y decoraciones florales."""
+    """Manejo de imágenes para avatares, portadas, nodos y decoraciones."""
 
     @staticmethod
     def blob_a_ctkimage(blob, size=(150, 150)):
@@ -21,31 +21,23 @@ class ImageUtils:
     
     @staticmethod
     def blob_a_ctkimage_rounded(blob, size=(150, 150), radius=15, top_only=False):
-        """
-        Convierte un BLOB en CTkImage con esquinas redondeadas.
-        Si top_only=True, solo redondea las esquinas superiores (ideal para portadas de tarjetas).
-        """
         if not blob:
-            # Imagen por defecto si no hay foto
-            img = Image.new("RGBA", size, "#FFF0F5")
+            img = Image.new("RGBA", size, "#FFF8F0")
             draw = ImageDraw.Draw(img)
-            fill = "#FFF0F5"
+            fill = "#FFF8F0"
         else:
             img = Image.open(io.BytesIO(blob)).convert("RGBA")
             img = img.resize(size, Image.LANCZOS)
 
-        # Crear máscara redondeada
         mask = Image.new("L", size, 0)
         draw = ImageDraw.Draw(mask)
         w, h = size
 
         if top_only:
-            # Redondea solo arriba: dibujamos un rectángulo redondeado más alto y lo cortamos
             draw.rounded_rectangle([0, 0, w, h + radius], radius=radius, fill=255)
         else:
             draw.rounded_rectangle([0, 0, w, h], radius=radius, fill=255)
 
-        # Aplicar máscara de transparencia
         if img.mode != "RGBA":
             img = img.convert("RGBA")
         img.putalpha(mask)
@@ -71,25 +63,23 @@ class ImageUtils:
 
     @staticmethod
     def avatar_default(size=(150, 150)):
-        img = Image.new("RGB", size, color="#FFF0F5")
+        img = Image.new("RGB", size, color="#FFF8F0")
         draw = ImageDraw.Draw(img)
-        draw.ellipse([10, 10, size[0]-10, size[1]-10], outline="#D4A5A5", width=3)
-        # Pequeña flor en el centro
+        draw.ellipse([10, 10, size[0]-10, size[1]-10], outline="#D2691E", width=3)
         cx, cy = size[0]//2, size[1]//2
-        draw.ellipse([cx-8, cy-8, cx+8, cy+8], fill="#F4D03F")
-        draw.ellipse([cx-3, cy-3, cx+3, cy+3], fill="#E91E63")
+        draw.ellipse([cx-8, cy-8, cx+8, cy+8], fill="#DAA520")
+        draw.ellipse([cx-3, cy-3, cx+3, cy+3], fill="#E67E22")
         return ctk.CTkImage(light_image=img, dark_image=img, size=size)
 
     @staticmethod
     def blob_a_tkimage(blob, size=(60, 60)):
-        """Convierte BLOB a PhotoImage circular para Canvas (tkinter)."""
+        """Convierte BLOB a PhotoImage circular para Canvas."""
         if not blob:
             img = Image.new("RGBA", size, (0, 0, 0, 0))
             draw = ImageDraw.Draw(img)
-            draw.ellipse([2, 2, size[0]-2, size[1]-2], outline="#D4A5A5", width=2)
-            # Flor mini
+            draw.ellipse([2, 2, size[0]-2, size[1]-2], outline="#D2691E", width=2)
             cx, cy = size[0]//2, size[1]//2
-            draw.ellipse([cx-4, cy-4, cx+4, cy+4], fill="#F4D03F", outline="#E91E63")
+            draw.ellipse([cx-4, cy-4, cx+4, cy+4], fill="#DAA520", outline="#E67E22")
         else:
             img = Image.open(io.BytesIO(blob))
             img = ImageUtils.recortar_cuadrado(img)
@@ -100,11 +90,8 @@ class ImageUtils:
             img.putalpha(mask)
         return ImageTk.PhotoImage(img)
 
-    # ─── Decoraciones florales ───
-
     @staticmethod
     def load_flower(name: str, size=None):
-        """Carga una imagen decorativa de flores."""
         path = os.path.join(FLOWERS_DIR, name)
         if not os.path.exists(path):
             return None
@@ -115,7 +102,6 @@ class ImageUtils:
 
     @staticmethod
     def add_corner_flowers(parent_frame, size=(80, 80)):
-        """Añade flores en las 4 esquinas de un frame."""
         corners = [
             ("corner_top_left.png", 0, 0, "nw"),
             ("corner_top_right.png", 1, 0, "ne"),
@@ -130,7 +116,6 @@ class ImageUtils:
 
     @staticmethod
     def add_divider(parent, pady=10):
-        """Añade un separador floral horizontal."""
         img = ImageUtils.load_flower("divider.png", (300, 30))
         if img:
             lbl = ctk.CTkLabel(parent, image=img, text="")

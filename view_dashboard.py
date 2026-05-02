@@ -1,4 +1,4 @@
-"""Vista principal: grid de tarjetas con todas las novelas - Tema Jardín."""
+"""Vista principal: grid de tarjetas con todas las novelas - Tema Otoñal."""
 
 import customtkinter as ctk
 from tkinter import messagebox
@@ -16,11 +16,10 @@ class DashboardView(ctk.CTkFrame):
         self.db = app.db
         self.pack(fill="both", expand=True)
 
-        # Header con decoración
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=20, pady=20)
 
-        ctk.CTkLabel(header, text="📚 Mis Novelas", font=FONTS["title"], text_color=COLORS["text_primary"]).pack(side="left")
+        ctk.CTkLabel(header, text="🍂 Mis Novelas 🍁", font=FONTS["title"], text_color=COLORS["text_primary"]).pack(side="left")
 
         flower = ImageUtils.load_flower("card_accent.png", (50, 50))
         if flower:
@@ -36,7 +35,7 @@ class DashboardView(ctk.CTkFrame):
         ImageUtils.add_divider(self, pady=5)
 
         ctk.CTkLabel(
-            self, text="✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿  ✿",
+            self, text="🍂  🍁  🦋  🌻  🍂  🍁  🦋  🌻  🍂  🍁  🦋  🌻",
             font=FONTS["script"], text_color=COLORS["btn_hover"]
         ).pack(pady=(0, 10))
 
@@ -46,7 +45,6 @@ class DashboardView(ctk.CTkFrame):
         self._cargar_historias()
 
     def _abrir_dialogo_embebido(self, DialogClass, *args, on_close=None, **kwargs):
-        """Muestra un diálogo como panel centrado sobre esta vista."""
         overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
         overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
 
@@ -73,11 +71,12 @@ class DashboardView(ctk.CTkFrame):
         )
 
         if not historias:
-            frame_empty = ctk.CTkFrame(self.grid_frame, fg_color=COLORS["bg_card"], corner_radius=20)
+            frame_empty = ctk.CTkFrame(self.grid_frame, fg_color=COLORS["bg_card"], corner_radius=20,
+                                       border_color=COLORS["border_card"], border_width=2)
             frame_empty.pack(pady=50, padx=20)
             ImageUtils.add_corner_flowers(frame_empty, (60, 60))
             ctk.CTkLabel(
-                frame_empty, text="No hay historias aún.\n¡Crea la primera!",
+                frame_empty, text="No hay historias aún.\n¡Crea la primera! 🍂",
                 font=FONTS["body"], text_color=COLORS["text_secondary"]
             ).pack(pady=40, padx=40)
             return
@@ -92,7 +91,6 @@ class DashboardView(ctk.CTkFrame):
 
             ImageUtils.add_corner_flowers(card, (50, 50))
 
-            # Tamaño ajustado al ancho interior de la tarjeta (restando el borde de 2px por lado)
             img_w = CARD_WIDTH - 4
             img_h = 180
             img = ImageUtils.blob_a_ctkimage_rounded(
@@ -103,7 +101,7 @@ class DashboardView(ctk.CTkFrame):
             ).pack(fill="x", pady=(2, 0))
 
             ctk.CTkLabel(
-                card, text=nombre, font=FONTS["heading"],
+                card, text=f"🍂 {nombre}", font=FONTS["heading"],
                 text_color=COLORS["text_primary"], wraplength=250
             ).pack(pady=(10, 5))
 
@@ -116,7 +114,7 @@ class DashboardView(ctk.CTkFrame):
             btn_frame = ctk.CTkFrame(card, fg_color="transparent")
             btn_frame.pack(pady=10)
             ctk.CTkButton(
-                btn_frame, text="Abrir", width=80, corner_radius=15,
+                btn_frame, text="Abrir 🍁", width=80, corner_radius=15,
                 fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
                 text_color=COLORS["text_light"],
                 command=lambda h=hid: self.app.abrir_historia(h)
@@ -135,7 +133,7 @@ class DashboardView(ctk.CTkFrame):
         )
 
     def _borrar_historia(self, hid, nombre):
-        if messagebox.askyesno("Confirmar", f"¿Borrar '{nombre}' y todo su contenido?"):
+        if messagebox.askyesno("Confirmar", f"¿Borrar '{nombre}' y todo su contenido? 🍂"):
             self.db.ejecutar(
                 "DELETE FROM partes_capitulo WHERE capitulo_id IN (SELECT id FROM capitulos WHERE historia_id=?)",
                 (hid,)

@@ -1,4 +1,4 @@
-"""Vista de capítulos y sus partes - Tema Jardín."""
+"""Vista de capítulos y sus partes - Tema Otoñal."""
 
 import customtkinter as ctk
 from tkinter import messagebox
@@ -19,14 +19,14 @@ class DesarrolloView(ctk.CTkFrame):
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=10)
         ctk.CTkLabel(
-            top, text="📝 Desarrollo por Capítulos", font=FONTS["subtitle"],
+            top, text="📝 Desarrollo por Capítulos 🍂", font=FONTS["subtitle"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
         flower = ImageUtils.load_flower("card_accent.png", (35, 35))
         if flower:
             ctk.CTkLabel(top, image=flower, text="").pack(side="left", padx=8)
         ctk.CTkButton(
-            top, text="+ Nuevo Capítulo", command=self._crear, corner_radius=15,
+            top, text="+ Nuevo Capítulo 🍁", command=self._crear, corner_radius=15,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(side="right")
@@ -66,11 +66,11 @@ class DesarrolloView(ctk.CTkFrame):
 
         if not caps:
             empty = ctk.CTkFrame(self.lista_frame, fg_color=COLORS["bg_card"], corner_radius=15,
-                                border_color=COLORS["border_card"], border_width=1)
+                                border_color=COLORS["border_card"], border_width=2)
             empty.pack(pady=30, padx=20)
             ImageUtils.add_corner_flowers(empty, (50, 50))
             ctk.CTkLabel(
-                empty, text="No hay capítulos aún\n¡Empieza a escribir tu historia!",
+                empty, text="No hay capítulos aún\n¡Empieza a escribir tu historia! 🍂",
                 font=FONTS["body"], text_color=COLORS["text_secondary"]
             ).pack(pady=30, padx=30)
             return
@@ -78,7 +78,7 @@ class DesarrolloView(ctk.CTkFrame):
         for cid, num, titulo, plot in caps:
             card = ctk.CTkFrame(
                 self.lista_frame, corner_radius=15,
-                fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=1
+                fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=2
             )
             card.pack(fill="x", pady=8, padx=5)
             ImageUtils.add_corner_flowers(card, (35, 35))
@@ -86,14 +86,14 @@ class DesarrolloView(ctk.CTkFrame):
             header = ctk.CTkFrame(card, fg_color="transparent")
             header.pack(fill="x", padx=15, pady=10)
             ctk.CTkLabel(
-                header, text=f"Cap. {num}: {titulo}", font=FONTS["heading"],
+                header, text=f"🍂 Cap. {num}: {titulo}", font=FONTS["heading"],
                 text_color=COLORS["text_primary"]
             ).pack(side="left")
 
             btns = ctk.CTkFrame(header, fg_color="transparent")
             btns.pack(side="right")
             ctk.CTkButton(
-                btns, text="Ver partes", width=80, corner_radius=10,
+                btns, text="Ver partes 🌻", width=90, corner_radius=10,
                 fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
                 text_color=COLORS["text_light"],
                 command=lambda c=cid: self._ver_partes(c)
@@ -129,7 +129,7 @@ class DesarrolloView(ctk.CTkFrame):
         )
 
     def _borrar(self, cid, num):
-        if messagebox.askyesno("Confirmar", f"¿Borrar el Capítulo {num}?"):
+        if messagebox.askyesno("Confirmar", f"¿Borrar el Capítulo {num}? 🍂"):
             self.db.ejecutar("DELETE FROM partes_capitulo WHERE capitulo_id=?", (cid,))
             self.db.ejecutar("DELETE FROM capitulos WHERE id=?", (cid,))
             self._refresh()
@@ -152,7 +152,7 @@ class DesarrolloView(ctk.CTkFrame):
         header = ctk.CTkFrame(container, fg_color="transparent")
         header.pack(fill="x", padx=10, pady=10)
         ctk.CTkLabel(
-            header, text="✿ Partes del Capítulo ✿", font=FONTS["subtitle"],
+            header, text="🍁 Partes del Capítulo 🍂", font=FONTS["subtitle"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
         ctk.CTkButton(
@@ -163,7 +163,7 @@ class DesarrolloView(ctk.CTkFrame):
         ).pack(side="right")
 
         ctk.CTkButton(
-            header, text="+ Añadir Parte",
+            header, text="+ Añadir Parte 🌻",
             command=lambda: self._crear_parte(scroll, capitulo_id),
             corner_radius=15,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
@@ -188,7 +188,7 @@ class DesarrolloView(ctk.CTkFrame):
         for pid, nombre, contenido in partes:
             f = ctk.CTkFrame(
                 scroll, corner_radius=12,
-                fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=1
+                fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=2
             )
             f.pack(fill="x", pady=5)
             ImageUtils.add_corner_flowers(f, (30, 30))
@@ -196,7 +196,7 @@ class DesarrolloView(ctk.CTkFrame):
             hdr = ctk.CTkFrame(f, fg_color="transparent")
             hdr.pack(fill="x", padx=10, pady=(10, 5))
             ctk.CTkLabel(
-                hdr, text=nombre, font=FONTS["heading"],
+                hdr, text=f"🍂 {nombre}", font=FONTS["heading"],
                 text_color=COLORS["text_primary"]
             ).pack(side="left")
             ctk.CTkButton(
@@ -228,6 +228,6 @@ class DesarrolloView(ctk.CTkFrame):
         )
 
     def _borrar_parte(self, scroll, capitulo_id, pid, nombre):
-        if messagebox.askyesno("Confirmar", f"¿Borrar la parte '{nombre}'?"):
+        if messagebox.askyesno("Confirmar", f"¿Borrar la parte '{nombre}'? 🍂"):
             self.db.ejecutar("DELETE FROM partes_capitulo WHERE id=?", (pid,))
             self._render_partes(scroll, capitulo_id)
