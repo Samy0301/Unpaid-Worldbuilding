@@ -23,7 +23,7 @@ class ConexionesView(ctk.CTkFrame):
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=5, padx=10)
         ctk.CTkLabel(
-            top, text="🕸️ Mapa de Conexiones 🍂", font=FONTS["subtitle"],
+            top, text="🕸️Mapa de Conexiones", font=FONTS["subtitle"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
 
@@ -61,7 +61,7 @@ class ConexionesView(ctk.CTkFrame):
 
         self.lbl_ayuda = ctk.CTkLabel(
             leyenda,
-            text="Arrastra nodos para moverlos  •  Doble clic para ver ficha  •  Click derecho para opciones 🍁",
+            text="Arrastra nodos para moverlos  ⏺️  Doble clic para ver ficha  ⏺️  Click derecho para opciones ",
             font=FONTS["caption"], text_color=COLORS["text_secondary"]
         )
         self.lbl_ayuda.pack(side="left", padx=20)
@@ -131,7 +131,7 @@ class ConexionesView(ctk.CTkFrame):
                 fg_color=COLORS["accent"], hover_color="#C2185B"
             )
             self.lbl_ayuda.configure(
-                text="Arrastra desde un nodo a otro para crear una conexión  •  Doble clic para ver ficha 🍂"
+                text="Arrastra desde un nodo a otro para crear una conexión  ⏺️  Doble clic para ver ficha  ⏺️  Click derecho para opciones "
             )
             self.canvas.configure(cursor="crosshair")
         else:
@@ -141,7 +141,7 @@ class ConexionesView(ctk.CTkFrame):
                 fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"]
             )
             self.lbl_ayuda.configure(
-                text="Arrastra nodos para moverlos  •  Doble clic para ver ficha  •  Click derecho para opciones 🍁"
+                text="Arrastra nodos para moverlos  ⏺️  Doble clic para ver ficha  ⏺️  Click derecho para opciones "
             )
             self.canvas.configure(cursor="")
 
@@ -355,13 +355,13 @@ class ConexionesView(ctk.CTkFrame):
         menu.tk_popup(x, y)
 
     def _borrar_linea(self, rid):
-        if messagebox.askyesno("Confirmar", "¿Borrar esta conexión? 🍂"):
+        if messagebox.askyesno("Confirmar", "¿Borrar esta conexión? "):
             self.db.ejecutar("DELETE FROM relaciones WHERE id=?", (rid,))
             self._redibujar_conexiones()
 
     def _menu_nodo(self, x, y, pid):
         menu = Menu(self, tearoff=0, bg="#FFF8F0", fg="#4E342E", activebackground="#D2691E")
-        menu.add_command(label="👁 Ver ficha 🍁", command=lambda: self._abrir_dialogo_embebido(FichaPersonajeDialog, self.db, pid))
+        menu.add_command(label="👁 Ver ficha", command=lambda: self._abrir_dialogo_embebido(FichaPersonajeDialog, self.db, pid))
         menu.add_command(label="🗑 Quitar del mapa", command=lambda: self._quitar_nodo(pid))
         menu.tk_popup(x, y)
 
@@ -397,7 +397,7 @@ class ConexionesView(ctk.CTkFrame):
         header = ctk.CTkFrame(container, fg_color="transparent")
         header.pack(fill="x", padx=10, pady=(10, 0))
         ctk.CTkLabel(
-            header, text="Añadir personajes al mapa 🍂", font=FONTS["heading"],
+            header, text="Añadir personajes al mapa ⭐", font=FONTS["heading"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
         ctk.CTkButton(
@@ -416,7 +416,7 @@ class ConexionesView(ctk.CTkFrame):
 
         if not personajes:
             ctk.CTkLabel(
-                scroll, text="Todos los personajes ya están en el mapa. 🍁",
+                scroll, text="Todos los personajes ya están en el mapa. 🌞",
                 text_color=COLORS["text_secondary"]
             ).pack(pady=20)
             return
@@ -457,4 +457,4 @@ class ConexionesView(ctk.CTkFrame):
                 "INSERT OR REPLACE INTO posiciones_nodos (historia_id, personaje_id, x, y) VALUES (?, ?, ?, ?)",
                 (self.historia_id, pid, data["x"], data["y"])
             )
-        messagebox.showinfo("Guardado", "Posiciones guardadas correctamente. 🍂")
+        messagebox.showinfo("Guardado", "Posiciones guardadas correctamente.")

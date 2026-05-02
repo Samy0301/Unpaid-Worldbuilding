@@ -34,7 +34,7 @@ class HistoriaView(ctk.CTkFrame):
             bg_lbl = ctk.CTkLabel(self.sidebar, image=sidebar_bg, text="")
             bg_lbl.place(relwidth=1, relheight=1)
 
-        ctk.CTkLabel(self.sidebar, text="🍂", font=("Segoe UI", 40)).pack(pady=(30, 10))
+        ctk.CTkLabel(self.sidebar, text="🍀", font=("Segoe UI", 40)).pack(pady=(30, 10))
         self._lbl_nombre = ctk.CTkLabel(
             self.sidebar,
             text=self._truncate(self.h_nombre, 15),
@@ -50,11 +50,11 @@ class HistoriaView(ctk.CTkFrame):
         self._current_subview = None
 
         botones = [
-            ("🏠 Info 🍁", "info"),
-            ("👤 Personajes 🦋", "personajes"),
-            ("🕸️ Conexiones 🍂", "conexiones"),
-            ("📝 Desarrollo 🌻", "desarrollo"),
-            ("⬅ Volver 🌄", "dashboard"),
+            ("🏠 Info", "info"),
+            ("👤 Personajes", "personajes"),
+            ("🕸️Conexiones", "conexiones"),
+            ("📝 Desarrollo", "desarrollo"),
+            ("⬅ Volver", "dashboard"),
         ]
 
         for texto, destino in botones:

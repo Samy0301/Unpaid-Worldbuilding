@@ -59,12 +59,12 @@ class InfoHistoriaView(ctk.CTkFrame):
         ctk.CTkLabel(f, image=img, text="").pack(pady=10)
 
         ctk.CTkLabel(
-            f, text=f"🍂 {self.hv.h_nombre} 🍁", font=FONTS["title"],
+            f, text=f"🌟 {self.hv.h_nombre} 🌟", font=FONTS["title"],
             text_color=COLORS["text_primary"]
         ).pack()
 
         ctk.CTkLabel(
-            f, text="🍁 Resumen 🍂", font=FONTS["script"],
+            f, text="🍁 Resumen 🍁", font=FONTS["script"],
             text_color=COLORS["accent"]
         ).pack(pady=(20, 5))
 
@@ -74,7 +74,7 @@ class InfoHistoriaView(ctk.CTkFrame):
         ).pack()
 
         ctk.CTkLabel(
-            f, text="🌻 Plot General 🍂", font=FONTS["script"],
+            f, text="🌻 Plot General 🌻", font=FONTS["script"],
             text_color=COLORS["accent"]
         ).pack(pady=(20, 5))
 

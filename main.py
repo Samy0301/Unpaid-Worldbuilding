@@ -16,7 +16,7 @@ class NovelPlannerApp(ctk.CTk):
 
     def __init__(self):
         super().__init__()
-        self.title("🍂 NovelPlanner - Para Escritores 🍁")
+        self.title("M dame nombre")
         self.geometry(WINDOW_SIZE)
         self.configure(fg_color=COLORS["bg_principal"])
         self.db = Database()

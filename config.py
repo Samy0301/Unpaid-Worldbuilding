@@ -49,15 +49,16 @@ FONTS = {
 }
 
 # ─── Colores de relaciones (ConexionesView) ───
+# NOTA: Mantenidos en colores vivos para máximo contraste sobre fondo otoñal
 RELATION_COLORS = {
-    "padre":   "#8B4513",
-    "madre":   "#D2691E",
-    "pareja":  "#DAA520",
-    "amigo":   "#CD853F",
-    "enemigo": "#A52A2A",
-    "familiar": "#6B8E23",
-    "mentor":  "#4682B4",
-    "rival":   "#B22222",
+    "padre":   "#4a90d9",   # Azul vivo
+    "madre":   "#d94a90",   # Fucsia
+    "pareja":  "#f5a623",   # Naranja ámbar
+    "amigo":   "#7ed321",   # Verde lima
+    "enemigo": "#d94a4a",   # Rojo coral
+    "familiar": "#9013fe",  # Púrpura eléctrico
+    "mentor":  "#00bcd4",   # Cyan
+    "rival":   "#bd10e0",   # Magenta
 }
 
 # ─── Dimensiones ───

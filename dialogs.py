@@ -77,7 +77,7 @@ class _BaseDialog(ctk.CTkFrame):
             ruta = filedialog.askopenfilename(filetypes=[("Imágenes", "*.png *.jpg *.jpeg")])
             if ruta:
                 self._foto_blob = ImageUtils.archivo_a_blob(ruta)
-                btn.configure(text="✅ Foto cargada 🍂", fg_color=COLORS["success"])
+                btn.configure(text="✅ Foto cargada", fg_color=COLORS["success"])
 
         btn = ctk.CTkButton(
             self.scroll, text=btn_text, command=seleccionar, corner_radius=15,
@@ -101,7 +101,7 @@ class HistoriaDialog(_BaseDialog):
     def __init__(self, parent, db, historia_id=None, on_close=None):
         self.db = db
         self.historia_id = historia_id
-        title = "🍁 Editar Historia 🍂" if historia_id else "🍂 Nueva Historia 🍁"
+        title = "🍁 Editar Historia 🍁" if historia_id else "🍂 Nueva Historia 🍂"
         super().__init__(parent, title=title, on_close=on_close)
 
         if historia_id:
@@ -124,7 +124,7 @@ class HistoriaDialog(_BaseDialog):
         self._add_foto_selector("📷 Subir portada", foto)
 
         ctk.CTkButton(
-            self.scroll, text="Guardar 🍂", command=self._guardar,
+            self.scroll, text="Guardar 🌠", command=self._guardar,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"], corner_radius=15,
             font=FONTS["heading"]
@@ -161,7 +161,7 @@ class PersonajeDialog(_BaseDialog):
         self.db = db
         self.historia_id = historia_id
         self.personaje_id = personaje_id
-        title = "🍁 Editar Personaje 🍂" if personaje_id else "🍂 Nuevo Personaje 🍁"
+        title = "🍁 Editar Personaje 🍁" if personaje_id else "🍂 Nuevo Personaje 🍂"
         super().__init__(parent, title=title, on_close=on_close)
 
         if personaje_id:
@@ -190,7 +190,7 @@ class PersonajeDialog(_BaseDialog):
         self._add_foto_selector("📷 Foto del personaje", defaults["foto"])
 
         ctk.CTkButton(
-            self.scroll, text="Guardar 🍂", command=self._guardar,
+            self.scroll, text="Guardar 🌠", command=self._guardar,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"], corner_radius=15,
             font=FONTS["heading"]
@@ -234,7 +234,7 @@ class CapituloDialog(_BaseDialog):
         self.db = db
         self.historia_id = historia_id
         self.capitulo_id = capitulo_id
-        title = "🍁 Editar Capítulo 🍂" if capitulo_id else "🍂 Nuevo Capítulo 🍁"
+        title = "🍁 Editar Capítulo 🍁" if capitulo_id else "🍂 Nuevo Capítulo 🍂"
         super().__init__(parent, title=title, on_close=on_close)
 
         if capitulo_id:
@@ -252,7 +252,7 @@ class CapituloDialog(_BaseDialog):
         self.entry_plot = self._add_field("Plot guía:", "text", default=plot or "")
 
         ctk.CTkButton(
-            self.scroll, text="Guardar 🍂", command=self._guardar, corner_radius=15,
+            self.scroll, text="Guardar 🌠", command=self._guardar, corner_radius=15,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(pady=20)
@@ -282,7 +282,7 @@ class ParteDialog(_BaseDialog):
         self.db = db
         self.capitulo_id = capitulo_id
         self.parte_id = parte_id
-        title = "🍁 Editar Parte 🍂" if parte_id else "🍂 Nueva Parte 🍁"
+        title = "🍁 Editar Parte 🍁" if parte_id else "🍂 Nueva Parte 🍂"
         super().__init__(parent, title=title, on_close=on_close)
 
         flower = ImageUtils.load_flower("card_accent.png", (35, 35))
@@ -293,7 +293,7 @@ class ParteDialog(_BaseDialog):
         self.entry_cont = self._add_field("Contenido:", "text", default=contenido)
 
         ctk.CTkButton(
-            self.scroll, text="Guardar 🍂", command=self._guardar, corner_radius=15,
+            self.scroll, text="Guardar 🌠", command=self._guardar, corner_radius=15,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(pady=15)
@@ -332,7 +332,7 @@ class RelacionDialog(ctk.CTkFrame):
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", pady=(5, 0))
         ctk.CTkLabel(
-            header, text="🍂 Tipo de conexión 🍁", font=FONTS["subtitle"],
+            header, text="🍃  Tipo de conexión 🍃", font=FONTS["subtitle"],
             text_color=COLORS["text_primary"]
         ).pack(side="left", padx=5)
         ctk.CTkButton(
@@ -367,7 +367,7 @@ class RelacionDialog(ctk.CTkFrame):
         self.combo.pack()
 
         ctk.CTkButton(
-            self, text="Conectar 🍂", command=self._guardar, corner_radius=15,
+            self, text="Conectar 🌸", command=self._guardar, corner_radius=15,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(pady=20)
@@ -402,7 +402,7 @@ class FichaPersonajeDialog(ctk.CTkFrame):
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", pady=(5, 0))
         ctk.CTkLabel(
-            header, text="🍁 Ficha de Personaje 🍂", font=FONTS["subtitle"],
+            header, text="🔆 Ficha de Personaje 🔆", font=FONTS["subtitle"],
             text_color=COLORS["text_primary"]
         ).pack(side="left", padx=5)
         ctk.CTkButton(
@@ -441,7 +441,7 @@ class FichaPersonajeDialog(ctk.CTkFrame):
         for titulo, valor in campos:
             if valor:
                 ctk.CTkLabel(
-                    self, text=f"🍂 {titulo}:", font=FONTS["heading"],
+                    self, text=f"{titulo}:", font=FONTS["heading"],
                     text_color=COLORS["accent"]
                 ).pack(pady=(10, 2))
                 ctk.CTkLabel(
