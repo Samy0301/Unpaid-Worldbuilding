@@ -70,18 +70,23 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         )
         self.lbl_ayuda.pack(side="left", padx=20)
 
-        canvas_frame = ctk.CTkFrame(
+        self.canvas_frame = ctk.CTkFrame(
             self, fg_color=COLORS["bg_card"],
             border_color=COLORS["border_card"], border_width=2
         )
-        canvas_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        self.canvas_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        self.canvas_frame.pack_propagate(False)
 
-        self.canvas = tk.Canvas(canvas_frame, bg="#FFF8F0", highlightthickness=0)
+        self.canvas = tk.Canvas(
+            self.canvas_frame,
+            bg="#FFF8F0",
+            highlightthickness=0,
+            width=800,
+            height=600
+        )
         self.canvas.pack(fill="both", expand=True)
 
         self._fondo_floral = None
-        self._cargar_fondo_floral()
-
         self.nodos = {}
         self.conexiones = []
         self._drag = {"nodo": None, "ox": 0, "oy": 0, "linea_temp": None}
@@ -92,7 +97,13 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         self.canvas.bind("<Double-Button-1>", self._on_double_click)
         self.canvas.bind("<Button-3>", self._on_right_click)
 
-        self._cargar_datos()
+        self.after(100, self._cargar_datos)
+
+    def destroy(self):
+        """Limpieza explícita al destruir la vista"""
+        if hasattr(self, 'canvas') and self.canvas:
+            self.canvas.destroy()
+        super().destroy()
 
     def _cargar_fondo_floral(self):
         try:
@@ -227,7 +238,12 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         self.conexiones.append((rid, p1, p2, tipo, line_id, text_id))
 
     def _ordenar_capas(self):
-        self.canvas.tag_raise("nodos", "conexiones")
+        """Ordena capas de forma segura, verificando que los tags existan"""
+        conexiones_items = self.canvas.find_withtag("conexiones")
+        if conexiones_items:
+            self.canvas.tag_raise("nodos", "conexiones")
+        else:
+            self.canvas.tag_raise("nodos")
         self.canvas.tag_lower("fondo")
 
     def _actualizar_conexion(self, p1, p2, line_id, text_id):
