@@ -1,14 +1,14 @@
-"""Vista de capítulos y sus partes - Tema Otoñal."""
+"""Vista de capítulos y sus partes"""
 
 import customtkinter as ctk
 from tkinter import messagebox
 from config import FONTS, COLORS
-from utils import ImageUtils
+from utils import ImageUtils, DialogMixin
 from dialogs import CapituloDialog, ParteDialog
 
 
-class DesarrolloView(ctk.CTkFrame):
-    """Lista de capítulos con gestión de partes internas."""
+class DesarrolloView(ctk.CTkFrame, DialogMixin):
+    """Lista de capítulos con gestión de partes internas"""
 
     def __init__(self, parent, db, historia_id):
         super().__init__(parent, fg_color="transparent")
@@ -37,24 +37,6 @@ class DesarrolloView(ctk.CTkFrame):
         self.lista_frame.pack(fill="both", expand=True)
         self._refresh()
 
-    def _abrir_dialogo_embebido(self, DialogClass, *args, on_close=None, **kwargs):
-        overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
-        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
-
-        container = ctk.CTkFrame(
-            overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
-            border_color=COLORS["border_card"], border_width=2
-        )
-        container.place(relx=0.5, rely=0.5, anchor="center")
-
-        def _on_close():
-            overlay.destroy()
-            if on_close:
-                on_close()
-
-        dialog = DialogClass(container, *args, on_close=_on_close, **kwargs)
-        dialog.pack(fill="both", expand=True, padx=10, pady=10)
-
     def _refresh(self):
         for w in self.lista_frame.winfo_children():
             w.destroy()
@@ -65,8 +47,10 @@ class DesarrolloView(ctk.CTkFrame):
         )
 
         if not caps:
-            empty = ctk.CTkFrame(self.lista_frame, fg_color=COLORS["bg_card"], corner_radius=15,
-                                border_color=COLORS["border_card"], border_width=2)
+            empty = ctk.CTkFrame(
+                self.lista_frame, fg_color=COLORS["bg_card"], corner_radius=15,
+                border_color=COLORS["border_card"], border_width=2
+            )
             empty.pack(pady=30, padx=20)
             ImageUtils.add_corner_flowers(empty, (50, 50))
             ctk.CTkLabel(
@@ -101,7 +85,7 @@ class DesarrolloView(ctk.CTkFrame):
             ctk.CTkButton(
                 btns, text="✏️", width=40, corner_radius=10,
                 fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
-                command=lambda c=cid, n=num, t=titulo, p=plot: self._editar(c, n, t, p)
+                command=lambda c=cid: self._editar(c)
             ).pack(side="left", padx=2)
             ctk.CTkButton(
                 btns, text="🗑", width=40,
@@ -117,14 +101,14 @@ class DesarrolloView(ctk.CTkFrame):
                 ).pack(padx=15, pady=(0, 10))
 
     def _crear(self):
-        self._abrir_dialogo_embebido(
-            CapituloDialog, self.db, self.historia_id,
+        self.abrir_dialogo_embebido(
+            self, CapituloDialog, self.db, self.historia_id,
             on_close=self._refresh
         )
 
-    def _editar(self, cid, num, titulo, plot):
-        self._abrir_dialogo_embebido(
-            CapituloDialog, self.db, self.historia_id, cid,
+    def _editar(self, cid):
+        self.abrir_dialogo_embebido(
+            self, CapituloDialog, self.db, self.historia_id, cid,
             on_close=self._refresh
         )
 
@@ -216,14 +200,14 @@ class DesarrolloView(ctk.CTkFrame):
             ).pack(anchor="w", padx=10, pady=(0, 10))
 
     def _crear_parte(self, scroll, capitulo_id):
-        self._abrir_dialogo_embebido(
-            ParteDialog, self.db, capitulo_id,
+        self.abrir_dialogo_embebido(
+            self, ParteDialog, self.db, capitulo_id,
             on_close=lambda: self._render_partes(scroll, capitulo_id)
         )
 
     def _editar_parte(self, scroll, capitulo_id, pid, nombre, contenido):
-        self._abrir_dialogo_embebido(
-            ParteDialog, self.db, capitulo_id, pid, nombre, contenido,
+        self.abrir_dialogo_embebido(
+            self, ParteDialog, self.db, capitulo_id, pid, nombre, contenido,
             on_close=lambda: self._render_partes(scroll, capitulo_id)
         )
 

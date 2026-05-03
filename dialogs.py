@@ -1,4 +1,4 @@
-"""Paneles reutilizables para formularios - Tema Otoñal."""
+"""Paneles reutilizables para formularios"""
 
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
@@ -7,9 +7,9 @@ from utils import ImageUtils
 
 
 class _BaseDialog(ctk.CTkFrame):
-    """Panel base con scroll automático y selector de foto."""
+    """Panel base con scroll automático y selector de foto"""
 
-    def __init__(self, parent, title: str = "", geometry: str = None, on_close=None):
+    def __init__(self, parent, title: str = "", on_close=None):
         super().__init__(parent, fg_color="transparent")
         self.on_close = on_close
 
@@ -96,7 +96,7 @@ class _BaseDialog(ctk.CTkFrame):
 
 
 class HistoriaDialog(_BaseDialog):
-    """Crear o editar una historia."""
+    """Crear o editar una historia"""
 
     def __init__(self, parent, db, historia_id=None, on_close=None):
         self.db = db
@@ -153,7 +153,7 @@ class HistoriaDialog(_BaseDialog):
 
 
 class PersonajeDialog(_BaseDialog):
-    """Crear o editar un personaje."""
+    """Crear o editar un personaje"""
 
     CATEGORIAS = ["principal", "secundario", "terciario"]
 
@@ -228,7 +228,7 @@ class PersonajeDialog(_BaseDialog):
 
 
 class CapituloDialog(_BaseDialog):
-    """Crear o editar un capítulo."""
+    """Crear o editar un capítulo"""
 
     def __init__(self, parent, db, historia_id, capitulo_id=None, on_close=None):
         self.db = db
@@ -276,7 +276,7 @@ class CapituloDialog(_BaseDialog):
 
 
 class ParteDialog(_BaseDialog):
-    """Crear o editar una parte de capítulo."""
+    """Crear o editar una parte de capítulo"""
 
     def __init__(self, parent, db, capitulo_id, parte_id=None, nombre="", contenido="", on_close=None):
         self.db = db
@@ -317,7 +317,7 @@ class ParteDialog(_BaseDialog):
 
 
 class RelacionDialog(ctk.CTkFrame):
-    """Elegir tipo de relación entre dos personajes."""
+    """Elegir tipo de relación entre dos personajes"""
 
     def __init__(self, parent, db, historia_id, p1_id, p2_id, nombres: tuple, on_close=None):
         super().__init__(parent, fg_color="transparent")

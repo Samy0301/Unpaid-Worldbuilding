@@ -1,11 +1,11 @@
-"""Capa de acceso a datos SQLite."""
+"""Capa de acceso a datos SQLite"""
 
 import sqlite3
 from config import DB_PATH
 
 
 class Database:
-    """Gestiona la conexión y esquema de la base de datos (singleton)."""
+    """Gestiona la conexión y esquema de la base de datos (singleton)"""
 
     _instance = None
 

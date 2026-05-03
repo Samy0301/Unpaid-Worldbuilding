@@ -1,14 +1,14 @@
-"""Vista principal: grid de tarjetas con todas las novelas - Tema Otoñal."""
+"""Vista principal: grid de tarjetas con todas las novelas"""
 
 import customtkinter as ctk
 from tkinter import messagebox
 from config import FONTS, COLORS, CARD_WIDTH, CARD_HEIGHT
-from utils import ImageUtils
+from utils import ImageUtils, DialogMixin
 from dialogs import HistoriaDialog
 
 
-class DashboardView(ctk.CTkFrame):
-    """Pantalla de inicio con el listado de historias."""
+class DashboardView(ctk.CTkFrame, DialogMixin):
+    """Pantalla de inicio con el listado de historias"""
 
     def __init__(self, parent, app):
         super().__init__(parent, fg_color=COLORS["bg_principal"])
@@ -19,7 +19,10 @@ class DashboardView(ctk.CTkFrame):
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=20, pady=20)
 
-        ctk.CTkLabel(header, text="🌻 Title 🌻", font=FONTS["title"], text_color=COLORS["text_primary"]).pack(side="left")
+        ctk.CTkLabel(
+            header, text="🌻 NovelPlanner 🌻", font=FONTS["title"],
+            text_color=COLORS["text_primary"]
+        ).pack(side="left")
 
         flower = ImageUtils.load_flower("card_accent.png", (50, 50))
         if flower:
@@ -44,24 +47,6 @@ class DashboardView(ctk.CTkFrame):
 
         self._cargar_historias()
 
-    def _abrir_dialogo_embebido(self, DialogClass, *args, on_close=None, **kwargs):
-        overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
-        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
-
-        container = ctk.CTkFrame(
-            overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
-            border_color=COLORS["border_card"], border_width=2
-        )
-        container.place(relx=0.5, rely=0.5, anchor="center")
-
-        def _on_close():
-            overlay.destroy()
-            if on_close:
-                on_close()
-
-        dialog = DialogClass(container, *args, on_close=_on_close, **kwargs)
-        dialog.pack(fill="both", expand=True, padx=10, pady=10)
-
     def _cargar_historias(self):
         for widget in self.grid_frame.winfo_children():
             widget.destroy()
@@ -71,19 +56,26 @@ class DashboardView(ctk.CTkFrame):
         )
 
         if not historias:
-            frame_empty = ctk.CTkFrame(self.grid_frame, fg_color=COLORS["bg_card"], corner_radius=20,
-                                    border_color=COLORS["border_card"], border_width=2)
+            frame_empty = ctk.CTkFrame(
+                self.grid_frame, fg_color=COLORS["bg_card"], corner_radius=20,
+                border_color=COLORS["border_card"], border_width=2
+            )
             frame_empty.pack(pady=50, padx=20)
             ImageUtils.add_corner_flowers(frame_empty, (60, 60))
             ctk.CTkLabel(
-                frame_empty, text="No hay historias aún.\n¡Crea la primera! 🦋",
+                frame_empty,
+                text="No hay historias aún.\n¡Crea la primera! 🦋",
                 font=FONTS["body"], text_color=COLORS["text_secondary"]
             ).pack(pady=40, padx=40)
             return
 
+        inner = ctk.CTkFrame(self.grid_frame, fg_color="transparent")
+        inner.pack(fill="both", expand=True)
+        inner.grid_columnconfigure((0, 1, 2), weight=1, uniform="col")
+
         for i, (hid, nombre, resumen, foto) in enumerate(historias):
             card = ctk.CTkFrame(
-                self.grid_frame, corner_radius=15, width=CARD_WIDTH, height=CARD_HEIGHT,
+                inner, corner_radius=15, width=CARD_WIDTH, height=CARD_HEIGHT,
                 fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=2
             )
             card.grid(row=i // 3, column=i % 3, padx=15, pady=15, sticky="nsew")
@@ -101,7 +93,7 @@ class DashboardView(ctk.CTkFrame):
             ).pack(fill="x", pady=(2, 0))
 
             ctk.CTkLabel(
-                card, text=f"{nombre}", font=FONTS["heading"],
+                card, text=nombre, font=FONTS["heading"],
                 text_color=COLORS["text_primary"], wraplength=250
             ).pack(pady=(10, 5))
 
@@ -127,8 +119,8 @@ class DashboardView(ctk.CTkFrame):
             ).pack(side="left", padx=5)
 
     def _crear_historia(self):
-        self._abrir_dialogo_embebido(
-            HistoriaDialog, self.db,
+        self.abrir_dialogo_embebido(
+            self, HistoriaDialog, self.db,
             on_close=self._cargar_historias
         )
 

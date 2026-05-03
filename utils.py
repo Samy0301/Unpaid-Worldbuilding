@@ -1,14 +1,36 @@
-"""Utilidades de imágenes y UI - Tema Otoñal."""
+"""Utilidades de imágenes, UI y mixins"""
 
 import io
 import os
 import customtkinter as ctk
 from PIL import Image, ImageDraw, ImageTk
-from config import FLOWERS_DIR
+from config import FLOWERS_DIR, COLORS
+
+
+class DialogMixin:
+    """Mixin reutilizable para abrir diálogos embebidos con overlay"""
+
+    def abrir_dialogo_embebido(self, parent, DialogClass, *args, on_close=None, **kwargs):
+        overlay = ctk.CTkFrame(parent, fg_color=COLORS["bg_principal"])
+        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        container = ctk.CTkFrame(
+            overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
+            border_color=COLORS["border_card"], border_width=2
+        )
+        container.place(relx=0.5, rely=0.5, anchor="center")
+
+        def _on_close():
+            overlay.destroy()
+            if on_close:
+                on_close()
+
+        dialog = DialogClass(container, *args, on_close=_on_close, **kwargs)
+        dialog.pack(fill="both", expand=True, padx=10, pady=10)
 
 
 class ImageUtils:
-    """Manejo de imágenes para avatares, portadas, nodos y decoraciones."""
+    """Manejo de imágenes para avatares, portadas, nodos y decoraciones"""
 
     @staticmethod
     def blob_a_ctkimage(blob, size=(150, 150)):
@@ -18,7 +40,7 @@ class ImageUtils:
         img = ImageUtils.recortar_cuadrado(img)
         img = img.resize(size, Image.LANCZOS)
         return ctk.CTkImage(light_image=img, dark_image=img, size=size)
-    
+
     @staticmethod
     def blob_a_ctkimage_rounded(blob, size=(150, 150), radius=15, top_only=False):
         if not blob:
@@ -73,7 +95,7 @@ class ImageUtils:
 
     @staticmethod
     def blob_a_tkimage(blob, size=(60, 60)):
-        """Convierte BLOB a PhotoImage circular para Canvas."""
+        """Convierte BLOB a PhotoImage circular para Canvas"""
         if not blob:
             img = Image.new("RGBA", size, (0, 0, 0, 0))
             draw = ImageDraw.Draw(img)

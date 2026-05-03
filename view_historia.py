@@ -1,4 +1,4 @@
-"""Contenedor principal de una historia con sidebar de navegación - Tema Otoñal."""
+"""Contenedor principal de una historia con sidebar de navegación"""
 
 import customtkinter as ctk
 from config import FONTS, COLORS
@@ -10,7 +10,15 @@ from view_desarrollo import DesarrolloView
 
 
 class HistoriaView(ctk.CTkFrame):
-    """Frame contenedor con sidebar y área de contenido dinámico."""
+    """Frame contenedor con sidebar y área de contenido dinámico"""
+
+    NAV_ITEMS = [
+        ("🏠  Info", "info"),
+        ("👤  Personajes", "personajes"),
+        ("🕸️  Conexiones", "conexiones"),
+        ("📝  Desarrollo", "desarrollo"),
+        ("⬅️  Volver", "dashboard"),
+    ]
 
     def __init__(self, parent, app, historia_id):
         super().__init__(parent, fg_color=COLORS["bg_principal"])
@@ -25,7 +33,9 @@ class HistoriaView(ctk.CTkFrame):
         )
         self.h_nombre, self.h_resumen, self.h_plot, self.h_foto = row
 
-        self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0, fg_color=COLORS["bg_sidebar"])
+        self.sidebar = ctk.CTkFrame(
+            self, width=200, corner_radius=0, fg_color=COLORS["bg_sidebar"]
+        )
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
@@ -48,23 +58,18 @@ class HistoriaView(ctk.CTkFrame):
         self.content.pack(side="right", fill="both", expand=True, padx=20, pady=20)
 
         self._current_subview = None
+        self._nav_buttons = {}
 
-        botones = [
-            ("🏠 Info", "info"),
-            ("👤 Personajes", "personajes"),
-            ("🕸️Conexiones", "conexiones"),
-            ("📝 Desarrollo", "desarrollo"),
-            ("⬅ Volver", "dashboard"),
-        ]
-
-        for texto, destino in botones:
+        for texto, destino in self.NAV_ITEMS:
             cmd = self.app.mostrar_dashboard if destino == "dashboard" else lambda d=destino: self._cambiar_vista(d)
-            ctk.CTkButton(
+            btn = ctk.CTkButton(
                 self.sidebar, text=texto, command=cmd,
                 width=160, height=40, corner_radius=12, anchor="w",
                 fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
                 text_color=COLORS["text_light"], font=FONTS["body"]
-            ).pack(pady=5)
+            )
+            btn.pack(pady=5)
+            self._nav_buttons[destino] = btn
 
         flower = ImageUtils.load_flower("card_accent.png", (60, 60))
         if flower:
@@ -76,10 +81,19 @@ class HistoriaView(ctk.CTkFrame):
     def _truncate(text, max_len):
         return text[:max_len] + "..." if len(text) > max_len else text
 
+    def _set_active_nav(self, active_key):
+        for key, btn in self._nav_buttons.items():
+            if key == active_key:
+                btn.configure(fg_color=COLORS["btn_active"])
+            else:
+                btn.configure(fg_color=COLORS["btn_primary"])
+
     def _cambiar_vista(self, nombre):
         if self._current_subview:
             self._current_subview.destroy()
             self._current_subview = None
+
+        self._set_active_nav(nombre)
 
         if nombre == "info":
             self._current_subview = InfoHistoriaView(self.content, self)

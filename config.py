@@ -1,4 +1,4 @@
-"""Configuración global de NovelPlanner - Tema "Día Otoñal"."""
+"""Configuración global"""
 
 import os
 import customtkinter as ctk
@@ -15,26 +15,27 @@ os.makedirs(DATA_DIR, exist_ok=True)
 ctk.set_appearance_mode("Light")
 ctk.set_default_color_theme("green")
 
-# ─── Paleta "Día Otoñal" ───
+# ─── Paleta de colores ───
 COLORS = {
-    "bg_principal":    "#FFF8F0",   # Crema cálido otoñal
-    "bg_sidebar":      "#F5E6D3",   # Beige arena
-    "bg_card":         "#FFFBF5",   # Blanco cálido
-    "bg_dialog":       "#FFF5E6",   # Crema vainilla
-    "border_card":     "#A0522D",   # Siena / marrón canela
-    "btn_primary":     "#D2691E",   # Naranja terracota
-    "btn_hover":       "#8B4513",   # Marrón silla
-    "btn_accent":      "#DAA520",   # Ocre dorado
-    "btn_accent_hover":"#B8860B",   # Ocre oscuro
-    "text_primary":    "#4E342E",   # Marrón espresso
-    "text_secondary":  "#6D4C41",   # Marrón nuez
+    "bg_principal":    "#FFF8F0",
+    "bg_sidebar":      "#F5E6D3",
+    "bg_card":         "#FFFBF5",
+    "bg_dialog":       "#FFF5E6",
+    "border_card":     "#A0522D",
+    "btn_primary":     "#D2691E",
+    "btn_hover":       "#8B4513",
+    "btn_active":      "#A0522D",
+    "btn_accent":      "#DAA520",
+    "btn_accent_hover":"#B8860B",
+    "text_primary":    "#4E342E",
+    "text_secondary":  "#6D4C41",
     "text_light":      "#FFFFFF",
-    "accent":          "#E67E22",   # Naranja calabaza
-    "accent_soft":     "#F0D5A8",   # Ocre pastel
-    "success":         "#8FBC8F",   # Verde musgo suave
-    "danger":          "#CD5C5C",   # Rojo ladrillo
-    "danger_hover":    "#B22222",   # Rojo fuego
-    "gray":            "#BCAAA4",   # Gris cálido
+    "accent":          "#E67E22",
+    "accent_soft":     "#F0D5A8",
+    "success":         "#8FBC8F",
+    "danger":          "#CD5C5C",
+    "danger_hover":    "#B22222",
+    "gray":            "#BCAAA4",
 }
 
 # ─── Estilos ───
@@ -48,17 +49,16 @@ FONTS = {
     "script":      ("Segoe Script", 14),
 }
 
-# ─── Colores de relaciones (ConexionesView) ───
-# NOTA: Mantenidos en colores vivos para máximo contraste sobre fondo otoñal
+# ─── Colores de relaciones ───
 RELATION_COLORS = {
-    "padre":   "#1122e2",   # Azul vivo
-    "madre":   "#f204ab",   # Fucsia
-    "pareja":  "#f79204",   # Naranja ámbar
-    "amigo":   "#08de1e",   # Verde lima
-    "enemigo": "#d00606",   # Rojo coral
-    "familiar": "#a219c8",  # Púrpura eléctrico
-    "mentor":  "#2bdcf3",   # Cyan
-    "rival":   "#f674f8",   # Magenta
+    "padre":   "#1122e2",
+    "madre":   "#f204ab",
+    "pareja":  "#f79204",
+    "amigo":   "#08de1e",
+    "enemigo": "#d00606",
+    "familiar": "#a219c8",
+    "mentor":  "#2bdcf3",
+    "rival":   "#f674f8",
     "extra":   "#dbf326"
 }
 

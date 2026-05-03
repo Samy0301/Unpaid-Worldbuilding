@@ -1,14 +1,14 @@
-"""Gestión de personajes organizados por categoría - Tema Otoñal."""
+"""Gestión de personajes organizados por categoría"""
 
 import customtkinter as ctk
 from tkinter import messagebox
 from config import FONTS, COLORS
-from utils import ImageUtils
+from utils import ImageUtils, DialogMixin
 from dialogs import PersonajeDialog, FichaPersonajeDialog
 
 
-class PersonajesView(ctk.CTkFrame):
-    """Tabs de personajes: Principal, Secundario, Terciario."""
+class PersonajesView(ctk.CTkFrame, DialogMixin):
+    """Tabs de personajes: Principal, Secundario, Terciario"""
 
     CATEGORIAS = ["principal", "secundario", "terciario"]
 
@@ -51,24 +51,6 @@ class PersonajesView(ctk.CTkFrame):
 
         self._refresh()
 
-    def _abrir_dialogo_embebido(self, DialogClass, *args, on_close=None, **kwargs):
-        overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
-        overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
-
-        container = ctk.CTkFrame(
-            overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
-            border_color=COLORS["border_card"], border_width=2
-        )
-        container.place(relx=0.5, rely=0.5, anchor="center")
-
-        def _on_close():
-            overlay.destroy()
-            if on_close:
-                on_close()
-
-        dialog = DialogClass(container, *args, on_close=_on_close, **kwargs)
-        dialog.pack(fill="both", expand=True, padx=10, pady=10)
-
     def _refresh(self):
         for cat in self.CATEGORIAS:
             tab = self.tabview.tab(cat.capitalize())
@@ -80,15 +62,21 @@ class PersonajesView(ctk.CTkFrame):
         scroll = ctk.CTkScrollableFrame(frame, fg_color="transparent")
         scroll.pack(fill="both", expand=True)
 
+        inner = ctk.CTkFrame(scroll, fg_color="transparent")
+        inner.pack(fill="both", expand=True)
+        inner.grid_columnconfigure((0, 1, 2, 3), weight=1, uniform="card")
+
         personajes = self.db.obtener(
             "SELECT id, nombre, foto_blob FROM personajes WHERE historia_id=? AND categoria=?",
             (self.historia_id, categoria)
         )
 
         if not personajes:
-            empty = ctk.CTkFrame(scroll, fg_color=COLORS["bg_card"], corner_radius=15,
-                                border_color=COLORS["border_card"], border_width=2)
-            empty.pack(pady=30, padx=20)
+            empty = ctk.CTkFrame(
+                inner, fg_color=COLORS["bg_card"], corner_radius=15,
+                border_color=COLORS["border_card"], border_width=2
+            )
+            empty.grid(row=0, column=0, columnspan=4, pady=30, padx=20)
             ImageUtils.add_corner_flowers(empty, (50, 50))
             ctk.CTkLabel(
                 empty, text=f"No hay personajes {categoria}s aún 🌟",
@@ -98,10 +86,10 @@ class PersonajesView(ctk.CTkFrame):
 
         for i, (pid, nombre, foto) in enumerate(personajes):
             card = ctk.CTkFrame(
-                scroll, corner_radius=15, width=200, height=250,
+                inner, corner_radius=15, width=200, height=250,
                 fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=2
             )
-            card.grid(row=i // 4, column=i % 4, padx=10, pady=10)
+            card.grid(row=i // 4, column=i % 4, padx=10, pady=10, sticky="nsew")
             card.grid_propagate(False)
 
             ImageUtils.add_corner_flowers(card, (40, 40))
@@ -109,7 +97,7 @@ class PersonajesView(ctk.CTkFrame):
             img = ImageUtils.blob_a_ctkimage(foto, (200, 150))
             ctk.CTkLabel(card, image=img, text="").pack(pady=(10, 0))
             ctk.CTkLabel(
-                card, text=f"{nombre}", font=FONTS["heading"],
+                card, text=nombre, font=FONTS["heading"],
                 text_color=COLORS["text_primary"]
             ).pack(pady=5)
 
@@ -119,7 +107,9 @@ class PersonajesView(ctk.CTkFrame):
                 btnf, text="Ver 🌺", width=60, corner_radius=10,
                 fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
                 text_color=COLORS["text_light"],
-                command=lambda p=pid: self._abrir_dialogo_embebido(FichaPersonajeDialog, self.db, p)
+                command=lambda p=pid: self.abrir_dialogo_embebido(
+                    self, FichaPersonajeDialog, self.db, p
+                )
             ).pack(side="left", padx=2)
             ctk.CTkButton(
                 btnf, text="✏️", width=40, corner_radius=10,
@@ -134,14 +124,14 @@ class PersonajesView(ctk.CTkFrame):
             ).pack(side="left", padx=2)
 
     def _crear(self):
-        self._abrir_dialogo_embebido(
-            PersonajeDialog, self.db, self.historia_id,
+        self.abrir_dialogo_embebido(
+            self, PersonajeDialog, self.db, self.historia_id,
             on_close=self._refresh
         )
 
     def _editar(self, personaje_id):
-        self._abrir_dialogo_embebido(
-            PersonajeDialog, self.db, self.historia_id, personaje_id,
+        self.abrir_dialogo_embebido(
+            self, PersonajeDialog, self.db, self.historia_id, personaje_id,
             on_close=self._refresh
         )
 
