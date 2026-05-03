@@ -174,8 +174,7 @@ class ConexionesView(ctk.CTkFrame):
             if p1 in self.nodos and p2 in self.nodos:
                 self._dibujar_conexion(rid, p1, p2, tipo)
 
-        for pid in self.nodos:
-            self.canvas.tag_raise(f"nodo_{pid}")
+        self._ordenar_capas()
 
     def _crear_nodo(self, pid, nombre, foto_blob, x, y):
         foto_tk = ImageUtils.blob_a_tkimage(foto_blob)
@@ -183,18 +182,24 @@ class ConexionesView(ctk.CTkFrame):
 
         circulo = self.canvas.create_oval(
             x - r, y - r, x + r, y + r,
-            fill="#FFF8F0", outline="#D2691E", width=3, tags=f"nodo_{pid}"
+            fill="#FFF8F0", outline="#D2691E", width=3,
+            tags=("nodos", f"nodo_{pid}")          # ← tag de grupo
         )
-        imagen = self.canvas.create_image(x, y, image=foto_tk, tags=f"nodo_{pid}")
+        imagen = self.canvas.create_image(
+            x, y, image=foto_tk,
+            tags=("nodos", f"nodo_{pid}")          # ← tag de grupo
+        )
         texto = self.canvas.create_text(
-            x, y + r + 15, text=nombre, fill="#4E342E",
-            font=("Segoe UI", 10, "bold"), tags=f"nodo_{pid}"
+            x, y + r + 15, text=nombre, fill="#000000",
+            font=("Segoe UI", 10, "bold"),
+            tags=("nodos", f"nodo_{pid}")          # ← tag de grupo
         )
         hit = self.canvas.create_oval(
             x - r, y - r, x + r, y + r,
-            fill="", outline="", tags=f"nodo_{pid}"
+            fill="", outline="",
+            tags=("nodos", f"nodo_{pid}")          # ← tag de grupo
         )
-        self.canvas.tag_raise(hit)
+        self.canvas.tag_raise(hit)  # mantiene el hitbox al frente del propio nodo
 
         self.nodos[pid] = {
             "x": x, "y": y, "items": [circulo, imagen, texto, hit],
@@ -223,13 +228,21 @@ class ConexionesView(ctk.CTkFrame):
         x1b, y1b, x2b, y2b, mx, my = coords
         color = RELATION_COLORS.get(tipo, "#888888")
         dash = (6, 4) if tipo == "pareja" else ()
+        
         line_id = self.canvas.create_line(
-            x1b, y1b, x2b, y2b, fill=color, width=3, dash=dash, tags=f"rel_{rid}"
+            x1b, y1b, x2b, y2b, fill=color, width=3, dash=dash,
+            tags=("conexiones", f"rel_{rid}")      # ← tag de grupo
         )
         text_id = self.canvas.create_text(
-            mx, my - 8, text=tipo, fill=color, font=("Segoe UI", 9), tags=f"rel_{rid}"
+            mx, my - 8, text=tipo, fill=color, font=("Segoe UI", 9),
+            tags=("conexiones", f"rel_{rid}")      # ← tag de grupo
         )
         self.conexiones.append((rid, p1, p2, tipo, line_id, text_id))
+
+    def _ordenar_capas(self):
+        """Garantiza que: fondo < conexiones < nodos."""
+        self.canvas.tag_raise("nodos", "conexiones")
+        self.canvas.tag_lower("fondo")  # el fondo floral siempre al fondo de todo
 
     def _actualizar_conexion(self, p1, p2, line_id, text_id):
         coords = self._coords_conexion(p1, p2)
@@ -253,8 +266,7 @@ class ConexionesView(ctk.CTkFrame):
             if p1 in self.nodos and p2 in self.nodos:
                 self._dibujar_conexion(rid, p1, p2, tipo)
 
-        for pid in self.nodos:
-            self.canvas.tag_raise(f"nodo_{pid}")
+        self._ordenar_capas()
 
     def _nodo_en_coords(self, x, y):
         items = self.canvas.find_overlapping(x - 5, y - 5, x + 5, y + 5)
