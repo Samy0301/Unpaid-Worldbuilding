@@ -166,7 +166,7 @@ class TextUtils:
                 lines += 1
                 continue
             # Contar palabras y calcular wrapping
-            words = paragraph.split(' ')
+            words = paragraph.split(" ")
             current_line_len = 0
             for word in words:
                 word_len = len(word)
@@ -227,7 +227,7 @@ class TextUtils:
             """Ajusta la altura del textbox para que quepa todo el texto wrappeado."""
             try:
                 # Si el evento es del wrapper, usar su ancho; si no, obtenerlo directamente
-                if event and hasattr(event, 'widget') and event.widget == wrapper._w:
+                if event and hasattr(event, "widget") and event.widget == wrapper._w:
                     wrapper_width = event.width
                 else:
                     wrapper.update_idletasks()

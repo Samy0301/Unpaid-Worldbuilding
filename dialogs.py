@@ -167,11 +167,11 @@ class PersonajeDialog(_BaseDialog):
         if personaje_id:
             p = self.db.obtener_uno("SELECT * FROM personajes WHERE id=?", (personaje_id,))
             defaults = {
-                "nombre": p[2], "categoria": p[3], "edad": p[4], "familia": p[5],
-                "historia": p[6], "trauma": p[7], "rol": p[8], "guia": p[9], "foto": p[10]
+                "nombre": p[2], "apodo": p[3], "categoria": p[4], "edad": p[5], "familia": p[6],
+                "historia": p[7], "trauma": p[8], "rol": p[9], "guia": p[10], "foto": p[11]
             }
         else:
-            defaults = {k: "" for k in ["nombre", "edad", "familia", "historia", "trauma", "rol", "guia"]}
+            defaults = {k: "" for k in ["nombre", "apodo", "edad", "familia", "historia", "trauma", "rol", "guia"]}
             defaults["categoria"] = "principal"
             defaults["foto"] = None
 
@@ -180,9 +180,10 @@ class PersonajeDialog(_BaseDialog):
             ctk.CTkLabel(self.scroll, image=flower, text="").pack(pady=(10, 5))
 
         self.entry_nombre = self._add_field("Nombre *", "entry", default=defaults["nombre"])
+        self.entry_apodo = self._add_field("Apodo", "entry", default=defaults.get("apodo", ""))
         self.combo_cat = self._add_field("Categoría", "combo", values=self.CATEGORIAS, default=defaults["categoria"])
         self.entry_edad = self._add_field("Edad", "entry", default=defaults["edad"])
-        self.entry_familia = self._add_field("Familia / Apellido", "entry", default=defaults["familia"])
+        self.entry_familia = self._add_field("Familia / Clan", "entry", default=defaults["familia"])
         self.text_historia = self._add_field("Historia personal", "text", default=defaults["historia"])
         self.text_trauma = self._add_field("Traumas / Conflictos", "text", default=defaults["trauma"])
         self.text_rol = self._add_field("Rol en el plot", "text", default=defaults["rol"])
@@ -203,7 +204,7 @@ class PersonajeDialog(_BaseDialog):
             return
 
         data = (
-            self.historia_id, nombre, self.combo_cat.get(),
+            self.historia_id, nombre, self.entry_apodo.get().strip(), self.combo_cat.get(),
             self.entry_edad.get(), self.entry_familia.get(),
             self.text_historia.get("1.0", "end").strip(),
             self.text_trauma.get("1.0", "end").strip(),
@@ -212,19 +213,22 @@ class PersonajeDialog(_BaseDialog):
             self.foto_blob
         )
 
-        if self.personaje_id:
-            self.db.ejecutar("""
-                UPDATE personajes SET nombre=?, categoria=?, edad=?, familia=?,
-                historia_personal=?, trauma=?, plot_rol=?, guia_trama=?, foto_blob=?
-                WHERE id=?
-            """, (data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], self.personaje_id))
-        else:
-            self.db.ejecutar("""
-                INSERT INTO personajes (historia_id, nombre, categoria, edad, familia,
-                historia_personal, trauma, plot_rol, guia_trama, foto_blob)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, data)
-        self._cerrar()
+        try:
+            if self.personaje_id:
+                self.db.ejecutar("""
+                    UPDATE personajes SET nombre=?, apodo=?, categoria=?, edad=?, familia=?,
+                    historia_personal=?, trauma=?, plot_rol=?, guia_trama=?, foto_blob=?
+                    WHERE id=?
+                """, (data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], self.personaje_id))
+            else:
+                self.db.ejecutar("""
+                    INSERT INTO personajes (historia_id, nombre, apodo, categoria, edad, familia,
+                    historia_personal, trauma, plot_rol, guia_trama, foto_blob)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, data)
+            self._cerrar()
+        except Exception as e:
+            messagebox.showerror("Error al guardar", "No se pudo guardar el personaje. " + str(e))
 
 
 class CapituloDialog(_BaseDialog):
@@ -429,22 +433,22 @@ class FichaPersonajeDialog(ctk.CTkFrame):
         if flower:
             ctk.CTkLabel(scroll, image=flower, text="").pack(pady=10)
 
-        img = ImageUtils.blob_a_ctkimage(p[10], (200, 200))
+        img = ImageUtils.blob_a_ctkimage(p[11], (200, 200))
         ctk.CTkLabel(scroll, image=img, text="").pack(pady=10)
         ctk.CTkLabel(
             scroll, text=p[2], font=("Playfair Display", 24, "bold"),
             text_color=COLORS["text_primary"]
         ).pack()
         ctk.CTkLabel(
-            scroll, text=f"Categoría: {p[3].capitalize()}  |  Edad: {p[4] or 'N/A'}",
+            scroll, text=f"Categoría: {p[4].capitalize()}  |  Edad: {p[5] or 'N/A'}",
             font=FONTS["body"], text_color=COLORS["text_secondary"]
         ).pack()
 
         ImageUtils.add_divider(scroll, pady=10)
 
         campos = [
-            ("Familia", p[5]), ("Historia", p[6]), ("Trauma", p[7]),
-            ("Rol en Plot", p[8]), ("Guía de Trama", p[9])
+            ("Apodo", p[3]), ("Familia / Clan", p[6]), ("Historia", p[7]),
+            ("Trauma", p[8]), ("Rol en Plot", p[9]), ("Guía de Trama", p[10])
         ]
         for titulo, valor in campos:
             if valor:
