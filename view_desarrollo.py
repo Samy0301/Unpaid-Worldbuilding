@@ -99,12 +99,11 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
                     card, text="Plot:", font=FONTS["small"],
                     text_color=COLORS["accent"]
                 ).pack(anchor="w", padx=15, pady=(0, 2))
-                tb_plot = TextUtils.justified_textbox(
-                    card, plot, width=580,
+                TextUtils.justified_textbox(
+                    card, plot, padx=15,
                     font=FONTS["small"], text_color=COLORS["text_secondary"],
                     fg_color=COLORS["bg_card"]
                 )
-                tb_plot.pack(padx=15, pady=(0, 10))
 
     def _crear(self):
         self.abrir_dialogo_embebido(
@@ -201,12 +200,11 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
                 command=lambda p=pid, n=nombre: self._borrar_parte(scroll, capitulo_id, p, n)
             ).pack(side="right", padx=2)
             if contenido:
-                tb_cont = TextUtils.justified_textbox(
-                    f, contenido, width=560,
+                TextUtils.justified_textbox(
+                    f, contenido, padx=10,
                     font=FONTS["body"], text_color=COLORS["text_secondary"],
                     fg_color=COLORS["bg_card"]
                 )
-                tb_cont.pack(anchor="w", padx=10, pady=(0, 10))
             else:
                 ctk.CTkLabel(
                     f, text="(Sin contenido)", font=FONTS["body"],

@@ -149,36 +149,48 @@ class ImageUtils:
 
 
 class TextUtils:
-    """Utilidades para manejo de texto con justificación"""
+    """Utilidades para manejo de texto con justificación y adaptación automática"""
 
     @staticmethod
-    def _estimate_height(text: str, width: int, font) -> int:
-        """Estima la altura en píxeles necesaria para mostrar todo el texto."""
-        # Segoe UI 13 tiene aproximadamente 9px de ancho por carácter
-        avg_chars_per_line = max(30, width // 9)
-        # Contar saltos de línea explícitos
-        explicit_lines = text.count('\n') + 1
-        # Calcular líneas adicionales por wrapping de palabras
-        words = text.replace('\n', ' ').split(' ')
-        current_line_chars = 0
-        wrapped_lines = 0
-        for word in words:
-            if len(word) == 0:
+    def _estimate_height(text: str, width_px: int, font_name: str, font_size: int) -> int:
+        """Estima la altura en píxeles necesaria para mostrar todo el texto wrappeado."""
+        # Ancho aproximado por carácter (Segoe UI es proporcional, ~0.55 del tamaño de fuente)
+        avg_char_width = font_size * 0.55
+        # Ancho útil: restar padding interno del CTkTextbox (~20px cada lado)
+        usable_width = max(50, width_px - 40)
+        chars_per_line = max(10, int(usable_width / avg_char_width))
+
+        lines = 0
+        for paragraph in text.split(chr(10)):
+            if not paragraph.strip():
+                lines += 1
                 continue
-            if current_line_chars + len(word) + 1 > avg_chars_per_line:
-                wrapped_lines += 1
-                current_line_chars = len(word) + 1
-            else:
-                current_line_chars += len(word) + 1
-        total_lines = explicit_lines + wrapped_lines
-        # Altura por línea: ~22px para Segoe UI 13, + padding
-        line_height = 22
-        padding = 20
-        return max(40, total_lines * line_height + padding)
+            # Contar palabras y calcular wrapping
+            words = paragraph.split(' ')
+            current_line_len = 0
+            for word in words:
+                word_len = len(word)
+                if current_line_len == 0:
+                    current_line_len = word_len
+                elif current_line_len + 1 + word_len > chars_per_line:
+                    lines += 1
+                    current_line_len = word_len
+                else:
+                    current_line_len += 1 + word_len
+            lines += 1  # última línea del párrafo
+
+        # Altura por línea: tamaño de fuente + interlineado
+        line_height = font_size + 6
+        padding = 16  # padding interno top+bottom del textbox
+        return max(40, lines * line_height + padding)
 
     @staticmethod
-    def justified_textbox(parent, text: str, width=550, font=None, text_color=None, fg_color=None):
-        """Crea un CTkTextbox en modo solo lectura que muestra TODO el texto sin scroll interno."""
+    def justified_textbox(parent, text: str, font=None, text_color=None, fg_color=None, padx=15):
+        """Crea un CTkTextbox en modo solo lectura que se adapta al ancho del padre.
+
+        El texto se muestra con word-wrap automático, ocupando todo el ancho disponible
+        del contenedor padre menos el margen especificado por `padx`.
+        """
         if font is None:
             font = FONTS["body"]
         if text_color is None:
@@ -186,14 +198,57 @@ class TextUtils:
         if fg_color is None:
             fg_color = COLORS["bg_card"]
 
-        height = TextUtils._estimate_height(text, width, font)
+        font_name, font_size = font[0], font[1]
 
+        # Frame contenedor: ocupa todo el ancho del padre, con margen padx
+        wrapper = ctk.CTkFrame(parent, fg_color="transparent")
+        wrapper.pack(fill="x", padx=padx, pady=5)
+
+        # CTkTextbox: solo lectura, sin scrollbars, con wrap por palabra
         tb = ctk.CTkTextbox(
-            parent, width=width, height=height,
-            fg_color=fg_color, text_color=text_color,
-            border_color=COLORS["border_card"], font=font,
-            wrap="word", activate_scrollbars=False
+            wrapper,
+            fg_color=fg_color,
+            text_color=text_color,
+            border_color=COLORS["border_card"],
+            font=font,
+            wrap="word",
+            activate_scrollbars=False,
+            state="disabled"
         )
+        tb.pack(fill="x", expand=True)
+
+        # Insertar texto (temporalmente habilitar edición)
+        tb.configure(state="normal")
+        tb.delete("1.0", "end")
         tb.insert("1.0", text)
         tb.configure(state="disabled")
-        return tb
+
+        def _update_size(event=None):
+            """Ajusta la altura del textbox para que quepa todo el texto wrappeado."""
+            try:
+                # Si el evento es del wrapper, usar su ancho; si no, obtenerlo directamente
+                if event and hasattr(event, 'widget') and event.widget == wrapper._w:
+                    wrapper_width = event.width
+                else:
+                    wrapper.update_idletasks()
+                    wrapper_width = wrapper.winfo_width()
+
+                if wrapper_width < 50:
+                    return  # Aún no está renderizado
+
+                # Calcular altura necesaria
+                height = TextUtils._estimate_height(text, wrapper_width, font_name, font_size)
+
+                # Actualizar solo la altura; el ancho se maneja con pack fill="x"
+                tb.configure(height=height)
+            except Exception:
+                pass
+
+        # Actualizar cuando el wrapper cambie de tamaño
+        wrapper.bind("<Configure>", _update_size)
+        # Actualizaciones diferidas para cuando todo esté renderizado
+        wrapper.after(50, _update_size)
+        wrapper.after(150, lambda: _update_size())
+        wrapper.after(300, lambda: _update_size())
+
+        return wrapper

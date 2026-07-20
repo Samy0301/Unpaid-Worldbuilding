@@ -452,12 +452,11 @@ class FichaPersonajeDialog(ctk.CTkFrame):
                     scroll, text=f"{titulo}:", font=FONTS["heading"],
                     text_color=COLORS["accent"]
                 ).pack(pady=(10, 2))
-                tb = TextUtils.justified_textbox(
-                    scroll, valor, width=600,
+                TextUtils.justified_textbox(
+                    scroll, valor, padx=10,
                     font=FONTS["body"], text_color=COLORS["text_secondary"],
                     fg_color=COLORS["bg_card"]
                 )
-                tb.pack(pady=(0, 5))
 
         ctk.CTkButton(
             scroll, text="Cerrar", command=self._cerrar, corner_radius=15,

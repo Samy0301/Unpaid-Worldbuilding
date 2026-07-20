@@ -61,12 +61,11 @@ class InfoHistoriaView(ctk.CTkFrame, DialogMixin):
         ).pack(pady=(20, 5))
 
         if self.hv.h_resumen:
-            tb_resumen = TextUtils.justified_textbox(
-                f, self.hv.h_resumen, width=600,
+            TextUtils.justified_textbox(
+                f, self.hv.h_resumen, padx=15,
                 font=FONTS["body"], text_color=COLORS["text_secondary"],
                 fg_color=COLORS["bg_card"]
             )
-            tb_resumen.pack(pady=(0, 10))
         else:
             ctk.CTkLabel(
                 f, text="Sin resumen", font=FONTS["body"],
@@ -79,12 +78,11 @@ class InfoHistoriaView(ctk.CTkFrame, DialogMixin):
         ).pack(pady=(20, 5))
 
         if self.hv.h_plot:
-            tb_plot = TextUtils.justified_textbox(
-                f, self.hv.h_plot, width=600,
+            TextUtils.justified_textbox(
+                f, self.hv.h_plot, padx=15,
                 font=FONTS["body"], text_color=COLORS["text_secondary"],
                 fg_color=COLORS["bg_card"]
             )
-            tb_plot.pack(pady=(0, 10))
         else:
             ctk.CTkLabel(
                 f, text="Sin plot", font=FONTS["body"],
