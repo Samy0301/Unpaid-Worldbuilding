@@ -3,7 +3,7 @@
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
 from config import FONTS, COLORS, FLOWERS_DIR
-from utils import ImageUtils
+from utils import ImageUtils, TextUtils
 
 
 class _BaseDialog(ctk.CTkFrame):
@@ -39,7 +39,7 @@ class _BaseDialog(ctk.CTkFrame):
         ).pack(pady=(15, 3))
         if widget_type == "entry":
             w = ctk.CTkEntry(
-                self.scroll, width=550,
+                self.scroll, width=400,
                 fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
                 border_color=COLORS["border_card"]
             )
@@ -48,7 +48,7 @@ class _BaseDialog(ctk.CTkFrame):
             w.pack()
         elif widget_type == "combo":
             w = ctk.CTkComboBox(
-                self.scroll, values=values or [], width=550,
+                self.scroll, values=values or [], width=400,
                 fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
                 border_color=COLORS["border_card"], button_color=COLORS["btn_primary"]
             )
@@ -57,9 +57,9 @@ class _BaseDialog(ctk.CTkFrame):
             w.pack()
         elif widget_type == "text":
             w = ctk.CTkTextbox(
-                self.scroll, width=550, height=height,
+                self.scroll, width=400, height=height,
                 fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
-                border_color=COLORS["border_card"]
+                border_color=COLORS["border_card"], wrap="word"
             )
             if default:
                 w.insert("1.0", default)
@@ -360,7 +360,7 @@ class RelacionDialog(ctk.CTkFrame):
             text_color=COLORS["text_primary"]
         ).pack(pady=(15, 5))
         self.combo = ctk.CTkOptionMenu(
-            self, values=list(RELATION_COLORS.keys()), width=350,
+            self, values=list(RELATION_COLORS.keys()), width=250,
             fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
             button_color=COLORS["btn_primary"], button_hover_color=COLORS["btn_hover"]
         )
@@ -452,10 +452,12 @@ class FichaPersonajeDialog(ctk.CTkFrame):
                     scroll, text=f"{titulo}:", font=FONTS["heading"],
                     text_color=COLORS["accent"]
                 ).pack(pady=(10, 2))
-                ctk.CTkLabel(
-                    scroll, text=valor, font=FONTS["body"],
-                    text_color=COLORS["text_secondary"], wraplength=600
-                ).pack()
+                tb = TextUtils.justified_textbox(
+                    scroll, valor, width=600,
+                    font=FONTS["body"], text_color=COLORS["text_secondary"],
+                    fg_color=COLORS["bg_card"]
+                )
+                tb.pack(pady=(0, 5))
 
         ctk.CTkButton(
             scroll, text="Cerrar", command=self._cerrar, corner_radius=15,

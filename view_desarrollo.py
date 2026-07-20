@@ -3,7 +3,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from config import FONTS, COLORS
-from utils import ImageUtils, DialogMixin
+from utils import ImageUtils, DialogMixin, TextUtils
 from dialogs import CapituloDialog, ParteDialog
 
 
@@ -96,9 +96,15 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
 
             if plot:
                 ctk.CTkLabel(
-                    card, text=f"Plot: {plot}", font=FONTS["small"],
-                    text_color=COLORS["text_secondary"], wraplength=600
-                ).pack(padx=15, pady=(0, 10))
+                    card, text="Plot:", font=FONTS["small"],
+                    text_color=COLORS["accent"]
+                ).pack(anchor="w", padx=15, pady=(0, 2))
+                tb_plot = TextUtils.justified_textbox(
+                    card, plot, width=580,
+                    font=FONTS["small"], text_color=COLORS["text_secondary"],
+                    fg_color=COLORS["bg_card"]
+                )
+                tb_plot.pack(padx=15, pady=(0, 10))
 
     def _crear(self):
         self.abrir_dialogo_embebido(
@@ -194,10 +200,18 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
                 text_color=COLORS["text_light"], corner_radius=8,
                 command=lambda p=pid, n=nombre: self._borrar_parte(scroll, capitulo_id, p, n)
             ).pack(side="right", padx=2)
-            ctk.CTkLabel(
-                f, text=contenido, font=FONTS["body"],
-                text_color=COLORS["text_secondary"], wraplength=580
-            ).pack(anchor="w", padx=10, pady=(0, 10))
+            if contenido:
+                tb_cont = TextUtils.justified_textbox(
+                    f, contenido, width=560,
+                    font=FONTS["body"], text_color=COLORS["text_secondary"],
+                    fg_color=COLORS["bg_card"]
+                )
+                tb_cont.pack(anchor="w", padx=10, pady=(0, 10))
+            else:
+                ctk.CTkLabel(
+                    f, text="(Sin contenido)", font=FONTS["body"],
+                    text_color=COLORS["text_secondary"]
+                ).pack(anchor="w", padx=10, pady=(0, 10))
 
     def _crear_parte(self, scroll, capitulo_id):
         self.abrir_dialogo_embebido(

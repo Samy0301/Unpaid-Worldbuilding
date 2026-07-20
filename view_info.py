@@ -2,7 +2,7 @@
 
 import customtkinter as ctk
 from config import FONTS, COLORS
-from utils import ImageUtils, DialogMixin
+from utils import ImageUtils, DialogMixin, TextUtils
 from dialogs import HistoriaDialog
 
 
@@ -60,20 +60,36 @@ class InfoHistoriaView(ctk.CTkFrame, DialogMixin):
             text_color=COLORS["accent"]
         ).pack(pady=(20, 5))
 
-        ctk.CTkLabel(
-            f, text=self.hv.h_resumen or "Sin resumen", font=FONTS["body"],
-            text_color=COLORS["text_secondary"], wraplength=600
-        ).pack()
+        if self.hv.h_resumen:
+            tb_resumen = TextUtils.justified_textbox(
+                f, self.hv.h_resumen, width=600,
+                font=FONTS["body"], text_color=COLORS["text_secondary"],
+                fg_color=COLORS["bg_card"]
+            )
+            tb_resumen.pack(pady=(0, 10))
+        else:
+            ctk.CTkLabel(
+                f, text="Sin resumen", font=FONTS["body"],
+                text_color=COLORS["text_secondary"]
+            ).pack()
 
         ctk.CTkLabel(
             f, text="🌻 Plot General 🌻", font=FONTS["script"],
             text_color=COLORS["accent"]
         ).pack(pady=(20, 5))
 
-        ctk.CTkLabel(
-            f, text=self.hv.h_plot or "Sin plot", font=FONTS["body"],
-            text_color=COLORS["text_secondary"], wraplength=600
-        ).pack()
+        if self.hv.h_plot:
+            tb_plot = TextUtils.justified_textbox(
+                f, self.hv.h_plot, width=600,
+                font=FONTS["body"], text_color=COLORS["text_secondary"],
+                fg_color=COLORS["bg_card"]
+            )
+            tb_plot.pack(pady=(0, 10))
+        else:
+            ctk.CTkLabel(
+                f, text="Sin plot", font=FONTS["body"],
+                text_color=COLORS["text_secondary"]
+            ).pack()
 
         flower = ImageUtils.load_flower("card_accent.png", (70, 70))
         if flower:

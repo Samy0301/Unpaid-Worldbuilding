@@ -4,7 +4,7 @@ import io
 import os
 import customtkinter as ctk
 from PIL import Image, ImageDraw, ImageTk
-from config import FLOWERS_DIR, COLORS
+from config import FLOWERS_DIR, COLORS, FONTS
 
 
 class DialogMixin:
@@ -146,3 +146,54 @@ class ImageUtils:
             lbl.pack(pady=pady)
             return lbl
         return None
+
+
+class TextUtils:
+    """Utilidades para manejo de texto con justificación"""
+
+    @staticmethod
+    def _estimate_height(text: str, width: int, font) -> int:
+        """Estima la altura en píxeles necesaria para mostrar todo el texto."""
+        # Segoe UI 13 tiene aproximadamente 9px de ancho por carácter
+        avg_chars_per_line = max(30, width // 9)
+        # Contar saltos de línea explícitos
+        explicit_lines = text.count('\n') + 1
+        # Calcular líneas adicionales por wrapping de palabras
+        words = text.replace('\n', ' ').split(' ')
+        current_line_chars = 0
+        wrapped_lines = 0
+        for word in words:
+            if len(word) == 0:
+                continue
+            if current_line_chars + len(word) + 1 > avg_chars_per_line:
+                wrapped_lines += 1
+                current_line_chars = len(word) + 1
+            else:
+                current_line_chars += len(word) + 1
+        total_lines = explicit_lines + wrapped_lines
+        # Altura por línea: ~22px para Segoe UI 13, + padding
+        line_height = 22
+        padding = 20
+        return max(40, total_lines * line_height + padding)
+
+    @staticmethod
+    def justified_textbox(parent, text: str, width=550, font=None, text_color=None, fg_color=None):
+        """Crea un CTkTextbox en modo solo lectura que muestra TODO el texto sin scroll interno."""
+        if font is None:
+            font = FONTS["body"]
+        if text_color is None:
+            text_color = COLORS["text_secondary"]
+        if fg_color is None:
+            fg_color = COLORS["bg_card"]
+
+        height = TextUtils._estimate_height(text, width, font)
+
+        tb = ctk.CTkTextbox(
+            parent, width=width, height=height,
+            fg_color=fg_color, text_color=text_color,
+            border_color=COLORS["border_card"], font=font,
+            wrap="word", activate_scrollbars=False
+        )
+        tb.insert("1.0", text)
+        tb.configure(state="disabled")
+        return tb
