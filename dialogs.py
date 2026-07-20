@@ -412,27 +412,35 @@ class FichaPersonajeDialog(ctk.CTkFrame):
             font=FONTS["caption"]
         ).pack(side="right", padx=5)
 
+        # Scrollable frame para el contenido de la ficha
+        scroll = ctk.CTkScrollableFrame(
+            self, fg_color="transparent",
+            scrollbar_button_color=COLORS["btn_primary"],
+            scrollbar_button_hover_color=COLORS["btn_hover"]
+        )
+        scroll.pack(fill="both", expand=True, padx=10, pady=10)
+
         p = db.obtener_uno("SELECT * FROM personajes WHERE id=?", (personaje_id,))
         if not p:
-            ctk.CTkLabel(self, text="Personaje no encontrado", text_color=COLORS["text_primary"]).pack(pady=20)
+            ctk.CTkLabel(scroll, text="Personaje no encontrado", text_color=COLORS["text_primary"]).pack(pady=20)
             return
 
         flower = ImageUtils.load_flower("card_accent.png", (60, 60))
         if flower:
-            ctk.CTkLabel(self, image=flower, text="").pack(pady=10)
+            ctk.CTkLabel(scroll, image=flower, text="").pack(pady=10)
 
         img = ImageUtils.blob_a_ctkimage(p[10], (200, 200))
-        ctk.CTkLabel(self, image=img, text="").pack(pady=10)
+        ctk.CTkLabel(scroll, image=img, text="").pack(pady=10)
         ctk.CTkLabel(
-            self, text=p[2], font=("Playfair Display", 24, "bold"),
+            scroll, text=p[2], font=("Playfair Display", 24, "bold"),
             text_color=COLORS["text_primary"]
         ).pack()
         ctk.CTkLabel(
-            self, text=f"Categoría: {p[3].capitalize()}  |  Edad: {p[4] or 'N/A'}",
+            scroll, text=f"Categoría: {p[3].capitalize()}  |  Edad: {p[4] or 'N/A'}",
             font=FONTS["body"], text_color=COLORS["text_secondary"]
         ).pack()
 
-        ImageUtils.add_divider(self, pady=10)
+        ImageUtils.add_divider(scroll, pady=10)
 
         campos = [
             ("Familia", p[5]), ("Historia", p[6]), ("Trauma", p[7]),
@@ -441,23 +449,23 @@ class FichaPersonajeDialog(ctk.CTkFrame):
         for titulo, valor in campos:
             if valor:
                 ctk.CTkLabel(
-                    self, text=f"{titulo}:", font=FONTS["heading"],
+                    scroll, text=f"{titulo}:", font=FONTS["heading"],
                     text_color=COLORS["accent"]
                 ).pack(pady=(10, 2))
                 ctk.CTkLabel(
-                    self, text=valor, font=FONTS["body"],
+                    scroll, text=valor, font=FONTS["body"],
                     text_color=COLORS["text_secondary"], wraplength=450
                 ).pack()
 
         ctk.CTkButton(
-            self, text="Cerrar", command=self._cerrar, corner_radius=15,
+            scroll, text="Cerrar", command=self._cerrar, corner_radius=15,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(pady=20)
 
         flower2 = ImageUtils.load_flower("card_accent.png", (50, 50))
         if flower2:
-            ctk.CTkLabel(self, image=flower2, text="").pack(pady=15)
+            ctk.CTkLabel(scroll, image=flower2, text="").pack(pady=15)
 
     def _cerrar(self):
         if self.on_close:

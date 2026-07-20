@@ -20,11 +20,19 @@ class InfoHistoriaView(ctk.CTkFrame, DialogMixin):
         for w in self.winfo_children():
             w.destroy()
 
+        # Scrollable frame principal para todo el contenido
+        scroll = ctk.CTkScrollableFrame(
+            self, fg_color="transparent",
+            scrollbar_button_color=COLORS["btn_primary"],
+            scrollbar_button_hover_color=COLORS["btn_hover"]
+        )
+        scroll.pack(fill="both", expand=True, padx=10, pady=10)
+
         f = ctk.CTkFrame(
-            self, corner_radius=20, fg_color=COLORS["bg_card"],
+            scroll, corner_radius=20, fg_color=COLORS["bg_card"],
             border_color=COLORS["border_card"], border_width=2
         )
-        f.pack(fill="both", expand=True, padx=10, pady=10)
+        f.pack(fill="x", expand=True, padx=10, pady=10)
 
         ImageUtils.add_corner_flowers(f, (60, 60))
 
