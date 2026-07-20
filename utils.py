@@ -10,15 +10,17 @@ from config import FLOWERS_DIR, COLORS
 class DialogMixin:
     """Mixin reutilizable para abrir diálogos embebidos con overlay"""
 
-    def abrir_dialogo_embebido(self, parent, DialogClass, *args, on_close=None, **kwargs):
+    def abrir_dialogo_embebido(self, parent, DialogClass, *args, on_close=None, width=720, height=680, **kwargs):
         overlay = ctk.CTkFrame(parent, fg_color=COLORS["bg_principal"])
         overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
 
         container = ctk.CTkFrame(
             overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
-            border_color=COLORS["border_card"], border_width=2
+            border_color=COLORS["border_card"], border_width=2,
+            width=width, height=height
         )
         container.place(relx=0.5, rely=0.5, anchor="center")
+        container.pack_propagate(False)
 
         def _on_close():
             overlay.destroy()
@@ -26,7 +28,7 @@ class DialogMixin:
                 on_close()
 
         dialog = DialogClass(container, *args, on_close=_on_close, **kwargs)
-        dialog.pack(fill="both", expand=True, padx=10, pady=10)
+        dialog.pack(fill="both", expand=True, padx=15, pady=15)
 
 
 class ImageUtils:

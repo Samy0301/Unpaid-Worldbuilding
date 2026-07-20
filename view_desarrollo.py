@@ -125,7 +125,7 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
         container = ctk.CTkFrame(
             overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
             border_color=COLORS["border_card"], border_width=2,
-            width=520, height=620
+            width=700, height=700
         )
         container.place(relx=0.5, rely=0.5, anchor="center")
         container.pack_propagate(False)
@@ -196,7 +196,7 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
             ).pack(side="right", padx=2)
             ctk.CTkLabel(
                 f, text=contenido, font=FONTS["body"],
-                text_color=COLORS["text_secondary"], wraplength=420
+                text_color=COLORS["text_secondary"], wraplength=580
             ).pack(anchor="w", padx=10, pady=(0, 10))
 
     def _crear_parte(self, scroll, capitulo_id):

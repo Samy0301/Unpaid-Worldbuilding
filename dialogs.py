@@ -39,7 +39,7 @@ class _BaseDialog(ctk.CTkFrame):
         ).pack(pady=(15, 3))
         if widget_type == "entry":
             w = ctk.CTkEntry(
-                self.scroll, width=400,
+                self.scroll, width=550,
                 fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
                 border_color=COLORS["border_card"]
             )
@@ -48,7 +48,7 @@ class _BaseDialog(ctk.CTkFrame):
             w.pack()
         elif widget_type == "combo":
             w = ctk.CTkComboBox(
-                self.scroll, values=values or [], width=400,
+                self.scroll, values=values or [], width=550,
                 fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
                 border_color=COLORS["border_card"], button_color=COLORS["btn_primary"]
             )
@@ -57,7 +57,7 @@ class _BaseDialog(ctk.CTkFrame):
             w.pack()
         elif widget_type == "text":
             w = ctk.CTkTextbox(
-                self.scroll, width=400, height=height,
+                self.scroll, width=550, height=height,
                 fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
                 border_color=COLORS["border_card"]
             )
@@ -360,7 +360,7 @@ class RelacionDialog(ctk.CTkFrame):
             text_color=COLORS["text_primary"]
         ).pack(pady=(15, 5))
         self.combo = ctk.CTkOptionMenu(
-            self, values=list(RELATION_COLORS.keys()), width=250,
+            self, values=list(RELATION_COLORS.keys()), width=350,
             fg_color=COLORS["bg_card"], text_color=COLORS["text_primary"],
             button_color=COLORS["btn_primary"], button_hover_color=COLORS["btn_hover"]
         )
@@ -454,7 +454,7 @@ class FichaPersonajeDialog(ctk.CTkFrame):
                 ).pack(pady=(10, 2))
                 ctk.CTkLabel(
                     scroll, text=valor, font=FONTS["body"],
-                    text_color=COLORS["text_secondary"], wraplength=450
+                    text_color=COLORS["text_secondary"], wraplength=600
                 ).pack()
 
         ctk.CTkButton(

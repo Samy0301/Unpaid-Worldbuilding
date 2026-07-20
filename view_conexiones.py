@@ -400,7 +400,7 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         container = ctk.CTkFrame(
             overlay, fg_color=COLORS["bg_dialog"], corner_radius=20,
             border_color=COLORS["border_card"], border_width=2,
-            width=420, height=450
+            width=600, height=650
         )
         container.place(relx=0.5, rely=0.5, anchor="center")
         container.pack_propagate(False)
