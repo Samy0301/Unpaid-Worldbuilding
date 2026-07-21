@@ -1,4 +1,4 @@
-"""Configuración global"""
+"""Configuracion global"""
 
 import os
 import sys
@@ -21,27 +21,27 @@ def _get_user_data_dir():
         base = os.path.expanduser("~/Library/Application Support")
     else: 
         base = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
-    
+
     path = os.path.join(base, "NovelPlanner")
     os.makedirs(path, exist_ok=True)
     return path
 
 
-# ─── Rutas de ASSETS (dentro del ejecutable, solo lectura) ───
+# --- Rutas de ASSETS (dentro del ejecutable, solo lectura) ---
 BASE_DIR = _get_base_dir()
 ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 FLOWERS_DIR = os.path.join(ASSETS_DIR, "flowers")
 
-# ─── Rutas de DATOS (fuera del ejecutable, lectura/escritura) ───
+# --- Rutas de DATOS (fuera del ejecutable, lectura/escritura) ---
 DATA_DIR = _get_user_data_dir()
 DB_PATH = os.path.join(DATA_DIR, "novel_planner.db")
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# ─── Tema ───
+# --- Tema ---
 ctk.set_appearance_mode("Light")
 ctk.set_default_color_theme("green")
 
-# ─── Paleta de colores ───
+# --- Paleta de colores ---
 COLORS = {
     "bg_principal":    "#FFF8F0",
     "bg_sidebar":      "#F5E6D3",
@@ -64,7 +64,7 @@ COLORS = {
     "gray":            "#BCAAA4",
 }
 
-# ─── Estilos ───
+# --- Estilos ---
 FONTS = {
     "title":       ("Playfair Display", 32, "bold"),
     "subtitle":    ("Playfair Display", 24, "bold"),
@@ -75,20 +75,35 @@ FONTS = {
     "script":      ("Segoe Script", 14),
 }
 
-# ─── Colores de relaciones ───
+# --- Colores de relaciones ---
 RELATION_COLORS = {
-    "padre":   "#1122e2",
-    "madre":   "#f204ab",
-    "pareja":  "#f79204",
-    "amigo":   "#08de1e",
-    "enemigo": "#d00606",
-    "familiar": "#a219c8",
-    "mentor":  "#2bdcf3",
-    "rival":   "#f674f8",
-    "extra":   "#dbf326"
+    "padre":        "#E63946",
+    "madre":        "#8B2252",
+    "hermano":      "#2E7D32",
+    "hermanastro":  "#558B2F",
+    "primo":        "#6A1B9A",
+    "tio":          "#00695C",
+    "familiar":     "#C62828",
+    "pareja":       "#D81B60",
+    "amigo":        "#1565C0",
+    "mejor amigo":  "#0277BD",
+    "aliado":       "#00838F",
+    "mentor":       "#6D4C41",
+    "enemigo":      "#B71C1C",
+    "rival":        "#E65100",
+    "traidor":      "#37474F",
+    "amimenigo":    "#7B1FA2",
+    "jefe":         "#283593",
+    "deudor":       "#F57F17",
+    "protector":    "#2E7D32",
+    "informante":   "#455A64",
+    "chantajista":  "#4E342E",
+    "testigo":      "#5D4037",
+    "extra":        "#9E9E9E",
+    "ex":           "#795548",
 }
 
-# ─── Dimensiones ───
+# --- Dimensiones ---
 WINDOW_SIZE = "1200x800"
 CARD_WIDTH = 280
 CARD_HEIGHT = 320

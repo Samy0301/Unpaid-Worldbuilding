@@ -9,9 +9,9 @@ from utils import ImageUtils, DialogMixin
 from dialogs import RelacionDialog, FichaPersonajeDialog
 
 
-# Colores de borde para cada categoría de personaje
+# Colores de borde para cada categoria de personaje
 CATEGORIA_BORDE = {
-    "principal": "#D2691E",    # Marrón cálido (original)
+    "principal": "#D2691E",    # Marron calido (original)
     "secundario": "#2E86AB",   # Azul
     "terciario": "#6B8E23",    # Verde oliva
 }
@@ -66,26 +66,36 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             text_color=COLORS["text_light"]
         ).pack(side="right", padx=5)
 
-        # Leyenda de colores de relaciones
-        leyenda = ctk.CTkFrame(self, fg_color="transparent")
-        leyenda.pack(fill="x", padx=10)
+        # Leyenda de colores de relaciones (en dos filas para caber todos)
+        leyenda_frame = ctk.CTkFrame(self, fg_color="transparent")
+        leyenda_frame.pack(fill="x", padx=10)
 
-        for tipo, color in RELATION_COLORS.items():
-            f = ctk.CTkFrame(leyenda, width=12, height=12, corner_radius=6, fg_color=color)
-            f.pack(side="left", padx=(0, 4))
-            ctk.CTkLabel(
-                leyenda, text=tipo, font=FONTS["caption"],
-                text_color=COLORS["text_secondary"]
-            ).pack(side="left", padx=(0, 12))
+        rel_types = list(RELATION_COLORS.items())
+        mid = len(rel_types) // 2
+
+        for row_idx in range(2):
+            row_frame = ctk.CTkFrame(leyenda_frame, fg_color="transparent")
+            row_frame.pack(fill="x", pady=1)
+
+            start = 0 if row_idx == 0 else mid
+            end = mid if row_idx == 0 else len(rel_types)
+
+            for tipo, color in rel_types[start:end]:
+                f = ctk.CTkFrame(row_frame, width=10, height=10, corner_radius=5, fg_color=color)
+                f.pack(side="left", padx=(0, 3))
+                ctk.CTkLabel(
+                    row_frame, text=tipo, font=FONTS["caption"],
+                    text_color=COLORS["text_secondary"]
+                ).pack(side="left", padx=(0, 10))
 
         self.lbl_ayuda = ctk.CTkLabel(
-            leyenda,
+            leyenda_frame,
             text="Arrastra nodos para moverlos  |  Doble clic para ver ficha  |  Click derecho para opciones ",
             font=FONTS["caption"], text_color=COLORS["text_secondary"]
         )
-        self.lbl_ayuda.pack(side="left", padx=20)
+        self.lbl_ayuda.pack(pady=(3, 0))
 
-        # Leyenda de categorías de personajes
+        # Leyenda de categorias de personajes
         leyenda_cat = ctk.CTkFrame(self, fg_color="transparent")
         leyenda_cat.pack(fill="x", padx=10, pady=(2, 0))
 
