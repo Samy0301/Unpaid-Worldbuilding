@@ -19,6 +19,10 @@ class Database:
         return cls._instance
 
     def _crear_tablas(self):
+        # Desactivar foreign keys temporalmente durante la creación de tablas
+        # para evitar problemas con tablas que aún no existen
+        self.cursor.execute("PRAGMA foreign_keys = OFF")
+
         self.cursor.executescript("""
             CREATE TABLE IF NOT EXISTS historias (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,88 +110,123 @@ class Database:
         """)
         self.conn.commit()
         self._migrar_personajes()
+        # Reactivar foreign keys
+        self.cursor.execute("PRAGMA foreign_keys = ON")
 
     def _migrar_personajes(self):
         """Migra la tabla personajes si tiene esquema antiguo."""
-        self.cursor.execute("PRAGMA table_info(personajes)")
-        cols = {row[1]: row[0] for row in self.cursor.fetchall()}
+        try:
+            self.cursor.execute("PRAGMA table_info(personajes)")
+            cols = {row[1]: row[0] for row in self.cursor.fetchall()}
+        except sqlite3.OperationalError:
+            # La tabla personajes no existe aún, no hay nada que migrar
+            return
 
         if "apodo" not in cols:
             # Esquema antiguo sin apodo: recrear tabla
-            self.cursor.execute("SELECT * FROM personajes")
-            rows = self.cursor.fetchall()
+            try:
+                self.cursor.execute("SELECT * FROM personajes")
+                rows = self.cursor.fetchall()
 
-            self.cursor.execute("ALTER TABLE personajes RENAME TO personajes_old")
+                # Verificar que personajes_old no exista ya
+                self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='personajes_old'")
+                if self.cursor.fetchone():
+                    self.cursor.execute("DROP TABLE personajes_old")
 
-            self.cursor.executescript("""
-                CREATE TABLE personajes (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    historia_id INTEGER,
-                    nombre TEXT NOT NULL,
-                    apodo TEXT,
-                    categoria TEXT DEFAULT 'principal',
-                    edad TEXT,
-                    familia TEXT,
-                    historia_personal TEXT,
-                    trauma TEXT,
-                    plot_rol TEXT,
-                    guia_trama TEXT,
-                    foto_blob BLOB,
-                    FOREIGN KEY (historia_id) REFERENCES historias(id) ON DELETE CASCADE
-                );
-            """)
+                self.cursor.execute("ALTER TABLE personajes RENAME TO personajes_old")
 
-            for row in rows:
-                # Orden viejo: id, historia_id, nombre, categoria, edad, familia,
-                #              historia_personal, trauma, plot_rol, guia_trama, foto_blob
-                # Orden nuevo: id, historia_id, nombre, apodo, categoria, edad, familia,
-                #              historia_personal, trauma, plot_rol, guia_trama, foto_blob
-                self.cursor.execute("""
-                    INSERT INTO personajes (id, historia_id, nombre, apodo, categoria, edad, familia,
-                    historia_personal, trauma, plot_rol, guia_trama, foto_blob)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (row[0], row[1], row[2], None, row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10]))
+                self.cursor.executescript("""
+                    CREATE TABLE personajes (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        historia_id INTEGER,
+                        nombre TEXT NOT NULL,
+                        apodo TEXT,
+                        categoria TEXT DEFAULT 'principal',
+                        edad TEXT,
+                        familia TEXT,
+                        historia_personal TEXT,
+                        trauma TEXT,
+                        plot_rol TEXT,
+                        guia_trama TEXT,
+                        foto_blob BLOB,
+                        FOREIGN KEY (historia_id) REFERENCES historias(id) ON DELETE CASCADE
+                    );
+                """)
 
-            self.cursor.execute("DROP TABLE personajes_old")
-            self.conn.commit()
+                for row in rows:
+                    # Orden viejo: id, historia_id, nombre, categoria, edad, familia,
+                    #              historia_personal, trauma, plot_rol, guia_trama, foto_blob
+                    # Orden nuevo: id, historia_id, nombre, apodo, categoria, edad, familia,
+                    #              historia_personal, trauma, plot_rol, guia_trama, foto_blob
+                    self.cursor.execute("""
+                        INSERT INTO personajes (id, historia_id, nombre, apodo, categoria, edad, familia,
+                        historia_personal, trauma, plot_rol, guia_trama, foto_blob)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (row[0], row[1], row[2], None, row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10]))
+
+                self.cursor.execute("DROP TABLE personajes_old")
+                self.conn.commit()
+            except Exception as e:
+                self.conn.rollback()
+                # Si falla la migración, intentar restaurar
+                self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='personajes_old'")
+                if self.cursor.fetchone():
+                    self.cursor.execute("DROP TABLE IF EXISTS personajes")
+                    self.cursor.execute("ALTER TABLE personajes_old RENAME TO personajes")
+                raise
         elif cols.get("apodo") != 3:
             # apodo existe pero en posicion incorrecta (al final por ALTER TABLE)
-            self.cursor.execute("SELECT * FROM personajes")
-            rows = self.cursor.fetchall()
+            try:
+                self.cursor.execute("SELECT * FROM personajes")
+                rows = self.cursor.fetchall()
 
-            self.cursor.execute("ALTER TABLE personajes RENAME TO personajes_old")
+                # Verificar que personajes_old no exista ya
+                self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='personajes_old'")
+                if self.cursor.fetchone():
+                    self.cursor.execute("DROP TABLE personajes_old")
 
-            self.cursor.executescript("""
-                CREATE TABLE personajes (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    historia_id INTEGER,
-                    nombre TEXT NOT NULL,
-                    apodo TEXT,
-                    categoria TEXT DEFAULT 'principal',
-                    edad TEXT,
-                    familia TEXT,
-                    historia_personal TEXT,
-                    trauma TEXT,
-                    plot_rol TEXT,
-                    guia_trama TEXT,
-                    foto_blob BLOB,
-                    FOREIGN KEY (historia_id) REFERENCES historias(id) ON DELETE CASCADE
-                );
-            """)
+                self.cursor.execute("ALTER TABLE personajes RENAME TO personajes_old")
 
-            for row in rows:
-                # Orden con apodo al final: id, historia_id, nombre, categoria, edad, familia,
-                #              historia_personal, trauma, plot_rol, guia_trama, foto_blob, apodo
-                # Orden nuevo: id, historia_id, nombre, apodo, categoria, edad, familia,
-                #              historia_personal, trauma, plot_rol, guia_trama, foto_blob
-                self.cursor.execute("""
-                    INSERT INTO personajes (id, historia_id, nombre, apodo, categoria, edad, familia,
-                    historia_personal, trauma, plot_rol, guia_trama, foto_blob)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (row[0], row[1], row[2], row[11], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10]))
+                self.cursor.executescript("""
+                    CREATE TABLE personajes (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        historia_id INTEGER,
+                        nombre TEXT NOT NULL,
+                        apodo TEXT,
+                        categoria TEXT DEFAULT 'principal',
+                        edad TEXT,
+                        familia TEXT,
+                        historia_personal TEXT,
+                        trauma TEXT,
+                        plot_rol TEXT,
+                        guia_trama TEXT,
+                        foto_blob BLOB,
+                        FOREIGN KEY (historia_id) REFERENCES historias(id) ON DELETE CASCADE
+                    );
+                """)
 
-            self.cursor.execute("DROP TABLE personajes_old")
-            self.conn.commit()
+                for row in rows:
+                    # Orden con apodo al final: id, historia_id, nombre, categoria, edad, familia,
+                    #              historia_personal, trauma, plot_rol, guia_trama, foto_blob, apodo
+                    # Orden nuevo: id, historia_id, nombre, apodo, categoria, edad, familia,
+                    #              historia_personal, trauma, plot_rol, guia_trama, foto_blob
+                    apodo_idx = len(row) - 1  # apodo está al final
+                    self.cursor.execute("""
+                        INSERT INTO personajes (id, historia_id, nombre, apodo, categoria, edad, familia,
+                        historia_personal, trauma, plot_rol, guia_trama, foto_blob)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (row[0], row[1], row[2], row[apodo_idx], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10]))
+
+                self.cursor.execute("DROP TABLE personajes_old")
+                self.conn.commit()
+            except Exception as e:
+                self.conn.rollback()
+                # Si falla la migración, intentar restaurar
+                self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='personajes_old'")
+                if self.cursor.fetchone():
+                    self.cursor.execute("DROP TABLE IF EXISTS personajes")
+                    self.cursor.execute("ALTER TABLE personajes_old RENAME TO personajes")
+                raise
 
     def ejecutar(self, query: str, params=()):
         self.cursor.execute(query, params)

@@ -23,7 +23,7 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=5, padx=10)
         ctk.CTkLabel(
-            top, text="🕸️Mapa de Conexiones", font=FONTS["subtitle"],
+            top, text="Mapa de Conexiones", font=FONTS["subtitle"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
 
@@ -32,7 +32,7 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             ctk.CTkLabel(top, image=flower, text="").pack(side="left", padx=8)
 
         self.btn_modo = ctk.CTkButton(
-            top, text="✋  Modo: Mover", command=self._toggle_modo,
+            top, text="Modo: Mover", command=self._toggle_modo,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"],
             corner_radius=15, width=160, height=35
@@ -40,13 +40,13 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         self.btn_modo.pack(side="right", padx=5)
 
         ctk.CTkButton(
-            top, text="➕ Añadir personaje", command=self._mostrar_picker,
+            top, text="Anadir personaje", command=self._mostrar_picker,
             corner_radius=15, width=140,
             fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
             text_color=COLORS["text_light"]
         ).pack(side="right", padx=5)
         ctk.CTkButton(
-            top, text="💾 Guardar posiciones", command=self._guardar_posiciones,
+            top, text="Guardar posiciones", command=self._guardar_posiciones,
             corner_radius=15, width=140,
             fg_color=COLORS["success"], hover_color="#66BB6A",
             text_color=COLORS["text_light"]
@@ -65,7 +65,7 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
 
         self.lbl_ayuda = ctk.CTkLabel(
             leyenda,
-            text="Arrastra nodos para moverlos  ⏺️  Doble clic para ver ficha  ⏺️  Click derecho para opciones ",
+            text="Arrastra nodos para moverlos  |  Doble clic para ver ficha  |  Click derecho para opciones ",
             font=FONTS["caption"], text_color=COLORS["text_secondary"]
         )
         self.lbl_ayuda.pack(side="left", padx=20)
@@ -100,7 +100,7 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         self.after(100, self._cargar_datos)
 
     def destroy(self):
-        """Limpieza explícita al destruir la vista"""
+        """Limpieza explicita al destruir la vista"""
         if hasattr(self, 'canvas') and self.canvas:
             self.canvas.destroy()
         super().destroy()
@@ -125,21 +125,21 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         if self.modo == "mover":
             self.modo = "conectar"
             self.btn_modo.configure(
-                text="🔗  Modo: Conectar",
+                text="Modo: Conectar",
                 fg_color=COLORS["accent"], hover_color="#C2185B"
             )
             self.lbl_ayuda.configure(
-                text="Arrastra desde un nodo a otro para crear una conexión  ⏺️  Doble clic para ver ficha  ⏺️  Click derecho para opciones "
+                text="Arrastra desde un nodo a otro para crear una conexion  |  Doble clic para ver ficha  |  Click derecho para opciones "
             )
             self.canvas.configure(cursor="crosshair")
         else:
             self.modo = "mover"
             self.btn_modo.configure(
-                text="✋  Modo: Mover",
+                text="Modo: Mover",
                 fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"]
             )
             self.lbl_ayuda.configure(
-                text="Arrastra nodos para moverlos  ⏺️  Doble clic para ver ficha  ⏺️  Click derecho para opciones "
+                text="Arrastra nodos para moverlos  |  Doble clic para ver ficha  |  Click derecho para opciones "
             )
             self.canvas.configure(cursor="")
 
@@ -148,12 +148,11 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         self.nodos.clear()
         self.conexiones.clear()
 
-        if self._fondo_floral:
-            self.canvas.create_image(0, 0, image=self._fondo_floral, anchor="nw", tags="fondo")
-            self.canvas.tag_lower("fondo")
+        self._cargar_fondo_floral()
 
+        # Usar DISTINCT para evitar duplicados por si acaso
         personajes = self.db.obtener("""
-            SELECT p.id, p.nombre, p.foto_blob,
+            SELECT DISTINCT p.id, p.nombre, p.foto_blob,
                    COALESCE(pos.x, 100 + (p.id % 5) * 150),
                    COALESCE(pos.y, 100 + (p.id / 5) * 150)
             FROM personajes p
@@ -330,12 +329,14 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         pid_origen = self._drag["nodo"]
         linea_temp = self._drag["linea_temp"]
 
-        if self.modo == "conectar" and linea_temp and pid_origen is not None:
+        if self.modo == "conectar" and linea_temp is not None and pid_origen is not None:
             pid_destino = self._nodo_en_coords(event.x, event.y)
             if pid_destino is not None and pid_destino != pid_origen:
                 self._preguntar_tipo(pid_origen, pid_destino)
+            # Siempre limpiar la linea temporal
             self.canvas.delete(linea_temp)
 
+        # Resetear estado de drag SIEMPRE
         self._drag = {"nodo": None, "ox": 0, "oy": 0, "linea_temp": None}
 
     def _preguntar_tipo(self, p1, p2):
@@ -365,33 +366,39 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
 
     def _menu_linea(self, x, y, rid):
         menu = Menu(self, tearoff=0, bg="#FFF8F0", fg="#4E342E", activebackground="#D2691E")
-        menu.add_command(label="🗑 Borrar conexión", command=lambda: self._borrar_linea(rid))
+        menu.add_command(label="Borrar conexion", command=lambda: self._borrar_linea(rid))
         menu.tk_popup(x, y)
 
     def _borrar_linea(self, rid):
-        if messagebox.askyesno("Confirmar", "¿Borrar esta conexión?"):
+        if messagebox.askyesno("Confirmar", "Borrar esta conexion?"):
             self.db.ejecutar("DELETE FROM relaciones WHERE id=?", (rid,))
             self._redibujar_conexiones()
 
     def _menu_nodo(self, x, y, pid):
         menu = Menu(self, tearoff=0, bg="#FFF8F0", fg="#4E342E", activebackground="#D2691E")
         menu.add_command(
-            label="👁 Ver ficha",
+            label="Ver ficha",
             command=lambda: self.abrir_dialogo_embebido(self, FichaPersonajeDialog, self.db, pid)
         )
-        menu.add_command(label="🗑 Quitar del mapa", command=lambda: self._quitar_nodo(pid))
+        menu.add_command(label="Quitar del mapa", command=lambda: self._quitar_nodo(pid))
         menu.tk_popup(x, y)
 
     def _quitar_nodo(self, pid):
-        self.db.ejecutar(
-            "DELETE FROM posiciones_nodos WHERE historia_id=? AND personaje_id=?",
-            (self.historia_id, pid)
-        )
-        self.db.ejecutar(
-            "DELETE FROM relaciones WHERE historia_id=? AND (personaje1_id=? OR personaje2_id=?)",
-            (self.historia_id, pid, pid)
-        )
-        self._cargar_datos()
+        try:
+            self.db.ejecutar(
+                "DELETE FROM posiciones_nodos WHERE historia_id=? AND personaje_id=?",
+                (self.historia_id, pid)
+            )
+            self.db.ejecutar(
+                "DELETE FROM relaciones WHERE historia_id=? AND (personaje1_id=? OR personaje2_id=?)",
+                (self.historia_id, pid, pid)
+            )
+            # Limpiar el nodo del diccionario antes de recargar
+            if pid in self.nodos:
+                del self.nodos[pid]
+            self._cargar_datos()
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo quitar el nodo: {e}")
 
     def _mostrar_picker(self):
         overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
@@ -414,11 +421,11 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         header = ctk.CTkFrame(container, fg_color="transparent")
         header.pack(fill="x", padx=10, pady=(10, 0))
         ctk.CTkLabel(
-            header, text="Añadir personajes al mapa ⭐", font=FONTS["heading"],
+            header, text="Anadir personajes al mapa", font=FONTS["heading"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
         ctk.CTkButton(
-            header, text="✕", width=28, height=28, corner_radius=14,
+            header, text="X", width=28, height=28, corner_radius=14,
             command=_cerrar, fg_color=COLORS["danger"],
             hover_color=COLORS["danger_hover"], text_color=COLORS["text_light"],
             font=FONTS["caption"]
@@ -433,13 +440,13 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
 
         if not personajes:
             ctk.CTkLabel(
-                scroll, text="Todos los personajes ya están en el mapa. 🌞",
+                scroll, text="Todos los personajes ya estan en el mapa.",
                 text_color=COLORS["text_secondary"]
             ).pack(pady=20)
             return
 
         ctk.CTkLabel(
-            scroll, text="Haz clic para añadir:", font=FONTS["heading"],
+            scroll, text="Haz clic para anadir:", font=FONTS["heading"],
             text_color=COLORS["text_primary"]
         ).pack(pady=10)
 
@@ -452,7 +459,7 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
                 row, text=nombre, font=FONTS["body"], text_color=COLORS["text_primary"]
             ).pack(side="left", padx=10)
             ctk.CTkButton(
-                row, text="➕", width=40, corner_radius=8,
+                row, text="+", width=40, corner_radius=8,
                 fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
                 command=lambda p=pid: self._add_personaje(overlay, p)
             ).pack(side="right")

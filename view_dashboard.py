@@ -20,7 +20,7 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
         header.pack(fill="x", padx=20, pady=20)
 
         ctk.CTkLabel(
-            header, text="🌻 NovelPlanner 🌻", font=FONTS["title"],
+            header, text="NovelPlanner", font=FONTS["title"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
 
@@ -29,7 +29,7 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
             ctk.CTkLabel(header, image=flower, text="").pack(side="left", padx=10)
 
         ctk.CTkButton(
-            header, text="➕ Nueva Historia", command=self._crear_historia,
+            header, text="Nueva Historia", command=self._crear_historia,
             width=150, height=40, corner_radius=20,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"], font=FONTS["heading"]
@@ -38,7 +38,7 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
         ImageUtils.add_divider(self, pady=5)
 
         ctk.CTkLabel(
-            self, text="🦋  🔆  🌺  ☘️  🌻  ⭐  🌻  ☘️  🌺  🔆  🦋",
+            self, text="*  *  *  *  *  *  *  *  *  *",
             font=FONTS["script"], text_color=COLORS["btn_hover"]
         ).pack(pady=(0, 10))
 
@@ -64,7 +64,7 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
             ImageUtils.add_corner_flowers(frame_empty, (60, 60))
             ctk.CTkLabel(
                 frame_empty,
-                text="No hay historias aún.\n¡Crea la primera! 🦋",
+                text="No hay historias aun.\nCrea la primera!",
                 font=FONTS["body"], text_color=COLORS["text_secondary"]
             ).pack(pady=40, padx=40)
             return
@@ -106,13 +106,13 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
             btn_frame = ctk.CTkFrame(card, fg_color="transparent")
             btn_frame.pack(pady=10)
             ctk.CTkButton(
-                btn_frame, text="   Abrir ☀️", width=80, corner_radius=15,
+                btn_frame, text="Abrir", width=80, corner_radius=15,
                 fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
                 text_color=COLORS["text_light"],
                 command=lambda h=hid: self.app.abrir_historia(h)
             ).pack(side="left", padx=5)
             ctk.CTkButton(
-                btn_frame, text="🗑", width=40,
+                btn_frame, text="X", width=40,
                 fg_color=COLORS["danger"], hover_color=COLORS["danger_hover"],
                 text_color=COLORS["text_light"], corner_radius=15,
                 command=lambda h=hid, n=nombre: self._borrar_historia(h, n)
@@ -125,19 +125,24 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
         )
 
     def _borrar_historia(self, hid, nombre):
-        if messagebox.askyesno("Confirmar", f"¿Borrar '{nombre}' y todo su contenido?"):
-            self.db.ejecutar(
-                "DELETE FROM partes_capitulo WHERE capitulo_id IN (SELECT id FROM capitulos WHERE historia_id=?)",
-                (hid,)
-            )
-            self.db.ejecutar("DELETE FROM capitulos WHERE historia_id=?", (hid,))
-            self.db.ejecutar("DELETE FROM relaciones WHERE historia_id=?", (hid,))
-            self.db.ejecutar(
-                "DELETE FROM nodos_genealogicos WHERE arbol_id IN (SELECT id FROM arboles_genealogicos WHERE historia_id=?)",
-                (hid,)
-            )
-            self.db.ejecutar("DELETE FROM arboles_genealogicos WHERE historia_id=?", (hid,))
-            self.db.ejecutar("DELETE FROM posiciones_nodos WHERE historia_id=?", (hid,))
-            self.db.ejecutar("DELETE FROM personajes WHERE historia_id=?", (hid,))
-            self.db.ejecutar("DELETE FROM historias WHERE id=?", (hid,))
-            self._cargar_historias()
+        if messagebox.askyesno("Confirmar", f"Borrar '{nombre}' y todo su contenido?"):
+            try:
+                # Orden correcto de borrado respetando foreign keys
+                # Primero las tablas hijas, luego las padres
+                self.db.ejecutar(
+                    "DELETE FROM partes_capitulo WHERE capitulo_id IN (SELECT id FROM capitulos WHERE historia_id=?)",
+                    (hid,)
+                )
+                self.db.ejecutar("DELETE FROM capitulos WHERE historia_id=?", (hid,))
+                self.db.ejecutar("DELETE FROM relaciones WHERE historia_id=?", (hid,))
+                self.db.ejecutar(
+                    "DELETE FROM nodos_genealogicos WHERE arbol_id IN (SELECT id FROM arboles_genealogicos WHERE historia_id=?)",
+                    (hid,)
+                )
+                self.db.ejecutar("DELETE FROM arboles_genealogicos WHERE historia_id=?", (hid,))
+                self.db.ejecutar("DELETE FROM posiciones_nodos WHERE historia_id=?", (hid,))
+                self.db.ejecutar("DELETE FROM personajes WHERE historia_id=?", (hid,))
+                self.db.ejecutar("DELETE FROM historias WHERE id=?", (hid,))
+                self._cargar_historias()
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo borrar la historia: {e}")
