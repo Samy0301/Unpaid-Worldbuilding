@@ -9,6 +9,20 @@ from utils import ImageUtils, DialogMixin
 from dialogs import RelacionDialog, FichaPersonajeDialog
 
 
+# Colores de borde para cada categoría de personaje
+CATEGORIA_BORDE = {
+    "principal": "#D2691E",    # Marrón cálido (original)
+    "secundario": "#2E86AB",   # Azul
+    "terciario": "#6B8E23",    # Verde oliva
+}
+
+CATEGORIA_BORDE_GROSOR = {
+    "principal": 4,
+    "secundario": 3,
+    "terciario": 2,
+}
+
+
 class ConexionesView(ctk.CTkFrame, DialogMixin):
     """Canvas interactivo para visualizar y editar relaciones entre personajes"""
 
@@ -52,6 +66,7 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             text_color=COLORS["text_light"]
         ).pack(side="right", padx=5)
 
+        # Leyenda de colores de relaciones
         leyenda = ctk.CTkFrame(self, fg_color="transparent")
         leyenda.pack(fill="x", padx=10)
 
@@ -69,6 +84,23 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             font=FONTS["caption"], text_color=COLORS["text_secondary"]
         )
         self.lbl_ayuda.pack(side="left", padx=20)
+
+        # Leyenda de categorías de personajes
+        leyenda_cat = ctk.CTkFrame(self, fg_color="transparent")
+        leyenda_cat.pack(fill="x", padx=10, pady=(2, 0))
+
+        ctk.CTkLabel(
+            leyenda_cat, text="Personajes:", font=FONTS["caption"],
+            text_color=COLORS["text_secondary"]
+        ).pack(side="left", padx=(0, 8))
+
+        for cat, color in CATEGORIA_BORDE.items():
+            f = ctk.CTkFrame(leyenda_cat, width=12, height=12, corner_radius=6, fg_color=color)
+            f.pack(side="left", padx=(0, 4))
+            ctk.CTkLabel(
+                leyenda_cat, text=cat.capitalize(), font=FONTS["caption"],
+                text_color=COLORS["text_secondary"]
+            ).pack(side="left", padx=(0, 12))
 
         self.canvas_frame = ctk.CTkFrame(
             self, fg_color=COLORS["bg_card"],
@@ -150,9 +182,9 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
 
         self._cargar_fondo_floral()
 
-        # Usar DISTINCT para evitar duplicados por si acaso
+        # Ahora obtenemos tambien la categoria del personaje
         personajes = self.db.obtener("""
-            SELECT DISTINCT p.id, p.nombre, p.foto_blob,
+            SELECT DISTINCT p.id, p.nombre, p.foto_blob, p.categoria,
                    COALESCE(pos.x, 100 + (p.id % 5) * 150),
                    COALESCE(pos.y, 100 + (p.id / 5) * 150)
             FROM personajes p
@@ -160,8 +192,8 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             WHERE p.historia_id = ?
         """, (self.historia_id, self.historia_id))
 
-        for pid, nombre, foto_blob, x, y in personajes:
-            self._crear_nodo(pid, nombre, foto_blob, x, y)
+        for pid, nombre, foto_blob, categoria, x, y in personajes:
+            self._crear_nodo(pid, nombre, foto_blob, categoria, x, y)
 
         rels = self.db.obtener(
             "SELECT id, personaje1_id, personaje2_id, tipo FROM relaciones WHERE historia_id=?",
@@ -173,13 +205,17 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
 
         self._ordenar_capas()
 
-    def _crear_nodo(self, pid, nombre, foto_blob, x, y):
+    def _crear_nodo(self, pid, nombre, foto_blob, categoria, x, y):
         foto_tk = ImageUtils.blob_a_tkimage(foto_blob)
         r = NODE_RADIUS
 
+        # Color y grosor del borde segun categoria
+        borde_color = CATEGORIA_BORDE.get(categoria, "#D2691E")
+        borde_grosor = CATEGORIA_BORDE_GROSOR.get(categoria, 3)
+
         circulo = self.canvas.create_oval(
             x - r, y - r, x + r, y + r,
-            fill="#FFF8F0", outline="#D2691E", width=3,
+            fill="#FFF8F0", outline=borde_color, width=borde_grosor,
             tags=("nodos", f"nodo_{pid}")
         )
         imagen = self.canvas.create_image(
@@ -200,7 +236,7 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
 
         self.nodos[pid] = {
             "x": x, "y": y, "items": [circulo, imagen, texto, hit],
-            "foto_tk": foto_tk, "nombre": nombre
+            "foto_tk": foto_tk, "nombre": nombre, "categoria": categoria
         }
 
     def _coords_conexion(self, p1, p2):
@@ -432,7 +468,7 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         ).pack(side="right")
 
         personajes = self.db.obtener("""
-            SELECT id, nombre, foto_blob FROM personajes
+            SELECT id, nombre, foto_blob, categoria FROM personajes
             WHERE historia_id=? AND id NOT IN (
                 SELECT personaje_id FROM posiciones_nodos WHERE historia_id=?
             )
@@ -450,9 +486,15 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             text_color=COLORS["text_primary"]
         ).pack(pady=10)
 
-        for pid, nombre, foto in personajes:
+        for pid, nombre, foto, categoria in personajes:
             row = ctk.CTkFrame(scroll, fg_color="transparent")
             row.pack(fill="x", pady=3)
+
+            # Indicador de color segun categoria
+            color_cat = CATEGORIA_BORDE.get(categoria, "#D2691E")
+            indicador = ctk.CTkFrame(row, width=10, height=10, corner_radius=5, fg_color=color_cat)
+            indicador.pack(side="left", padx=(5, 2))
+
             img = ImageUtils.blob_a_ctkimage(foto, (40, 40))
             ctk.CTkLabel(row, image=img, text="").pack(side="left", padx=5)
             ctk.CTkLabel(
