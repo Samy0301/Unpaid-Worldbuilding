@@ -1,25 +1,17 @@
 """Mapa interactivo de relaciones entre personajes"""
 
-import os
 import tkinter as tk
 from tkinter import Menu, messagebox
 import customtkinter as ctk
-from config import FONTS, COLORS, RELATION_COLORS, NODE_RADIUS, FLOWERS_DIR
+from config import FONTS, COLORS, RELATION_COLORS, FLOWERS_DIR
 from utils import ImageUtils, DialogMixin
 from dialogs import RelacionDialog, FichaPersonajeDialog
 
 
-# Colores de borde para cada categoria de personaje
 CATEGORIA_BORDE = {
-    "principal": "#D2691E",    # Marron calido (original)
-    "secundario": "#2E86AB",   # Azul
-    "terciario": "#6B8E23",    # Verde oliva
-}
-
-CATEGORIA_BORDE_GROSOR = {
-    "principal": 4,
-    "secundario": 3,
-    "terciario": 2,
+    "principal": "#FA6C00",
+    "secundario": "#0004F8",
+    "terciario": "#2ACA05",
 }
 
 
@@ -66,7 +58,6 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             text_color=COLORS["text_light"]
         ).pack(side="right", padx=5)
 
-        # Leyenda de colores de relaciones (en dos filas para caber todos)
         leyenda_frame = ctk.CTkFrame(self, fg_color="transparent")
         leyenda_frame.pack(fill="x", padx=10)
 
@@ -95,7 +86,6 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         )
         self.lbl_ayuda.pack(pady=(3, 0))
 
-        # Leyenda de categorias de personajes
         leyenda_cat = ctk.CTkFrame(self, fg_color="transparent")
         leyenda_cat.pack(fill="x", padx=10, pady=(2, 0))
 
@@ -142,22 +132,22 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         self.after(100, self._cargar_datos)
 
     def destroy(self):
-        """Limpieza explicita al destruir la vista"""
         if hasattr(self, 'canvas') and self.canvas:
             self.canvas.destroy()
         super().destroy()
 
     def _cargar_fondo_floral(self):
         try:
-            from PIL import ImageTk, Image
+            from PIL import Image as PILImage, ImageTk as PILImageTk
+            import os
             path = os.path.join(FLOWERS_DIR, "canvas_bg.png")
             if not os.path.exists(path):
                 return
             self.canvas.update_idletasks()
             w = self.canvas.winfo_width() or 800
             h = self.canvas.winfo_height() or 600
-            pil_img = Image.open(path).resize((w, h), Image.LANCZOS)
-            self._fondo_floral = ImageTk.PhotoImage(pil_img)
+            pil_img = PILImage.open(path).resize((w, h), PILImage.LANCZOS)
+            self._fondo_floral = PILImageTk.PhotoImage(pil_img)
             self.canvas.create_image(0, 0, image=self._fondo_floral, anchor="nw", tags="fondo")
             self.canvas.tag_lower("fondo")
         except Exception:
@@ -192,7 +182,6 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
 
         self._cargar_fondo_floral()
 
-        # Ahora obtenemos tambien la categoria del personaje
         personajes = self.db.obtener("""
             SELECT DISTINCT p.id, p.nombre, p.foto_blob, p.categoria,
                    COALESCE(pos.x, 100 + (p.id % 5) * 150),
@@ -216,17 +205,11 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         self._ordenar_capas()
 
     def _crear_nodo(self, pid, nombre, foto_blob, categoria, x, y):
-        r = NODE_RADIUS  # Radio del nodo (35 por defecto, pero lo haremos mas grande)
-
-        # Usar foto circular mas grande: 70x70
         foto_size = 70
         foto_tk = ImageUtils.blob_a_tkimage(foto_blob, size=(foto_size, foto_size))
 
-        # Color y grosor del borde segun categoria
         borde_color = CATEGORIA_BORDE.get(categoria, "#D2691E")
-        borde_grosor = CATEGORIA_BORDE_GROSOR.get(categoria, 3)
 
-        # Circulo de fondo (borde)
         circulo = self.canvas.create_oval(
             x - foto_size//2 - 3, y - foto_size//2 - 3,
             x + foto_size//2 + 3, y + foto_size//2 + 3,
@@ -234,20 +217,17 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             tags=("nodos", f"nodo_{pid}")
         )
 
-        # Imagen circular
         imagen = self.canvas.create_image(
             x, y, image=foto_tk,
             tags=("nodos", f"nodo_{pid}")
         )
 
-        # Texto debajo
         texto = self.canvas.create_text(
             x, y + foto_size//2 + 18, text=nombre, fill="#000000",
             font=("Segoe UI", 11, "bold"),
             tags=("nodos", f"nodo_{pid}")
         )
 
-        # Hit area (invisible, para clicks)
         hit = self.canvas.create_oval(
             x - foto_size//2, y - foto_size//2,
             x + foto_size//2, y + foto_size//2,
@@ -271,7 +251,6 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             return None
         dx, dy = dx / dist, dy / dist
 
-        # Usar el tamano de la foto como radio
         r1 = self.nodos[p1]["foto_size"] // 2 + 5
         r2 = self.nodos[p2]["foto_size"] // 2 + 5
 
@@ -301,7 +280,6 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         self.conexiones.append((rid, p1, p2, tipo, line_id, text_id))
 
     def _ordenar_capas(self):
-        """Ordena capas de forma segura, verificando que los tags existan"""
         conexiones_items = self.canvas.find_withtag("conexiones")
         if conexiones_items:
             self.canvas.tag_raise("nodos", "conexiones")
@@ -399,10 +377,8 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             pid_destino = self._nodo_en_coords(event.x, event.y)
             if pid_destino is not None and pid_destino != pid_origen:
                 self._preguntar_tipo(pid_origen, pid_destino)
-            # Siempre limpiar la linea temporal
             self.canvas.delete(linea_temp)
 
-        # Resetear estado de drag SIEMPRE
         self._drag = {"nodo": None, "ox": 0, "oy": 0, "linea_temp": None}
 
     def _preguntar_tipo(self, p1, p2):
@@ -459,9 +435,6 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
                 "DELETE FROM relaciones WHERE historia_id=? AND (personaje1_id=? OR personaje2_id=?)",
                 (self.historia_id, pid, pid)
             )
-            # Limpiar el nodo del diccionario antes de recargar
-            if pid in self.nodos:
-                del self.nodos[pid]
             self._cargar_datos()
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo quitar el nodo: {e}")
@@ -520,7 +493,6 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             row = ctk.CTkFrame(scroll, fg_color="transparent")
             row.pack(fill="x", pady=3)
 
-            # Indicador de color segun categoria
             color_cat = CATEGORIA_BORDE.get(categoria, "#D2691E")
             indicador = ctk.CTkFrame(row, width=10, height=10, corner_radius=5, fg_color=color_cat)
             indicador.pack(side="left", padx=(5, 2))

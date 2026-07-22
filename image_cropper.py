@@ -1,7 +1,6 @@
 """Recortador de imagenes con seleccion manual de area - VERSION EMBEBIDA"""
 
 import tkinter as tk
-from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk, ImageDraw
 import customtkinter as ctk
 from config import FONTS, COLORS
@@ -15,19 +14,19 @@ class ImageCropper(ctk.CTkFrame):
     Uso:
         cropper = ImageCropper(parent, on_crop=callback, shape="square")
         cropper.pack(fill="both", expand=True)
-        # Luego llamar a cropper.cargar_imagen(ruta) o cropper.seleccionar_archivo()
+        # Luego llamar a cropper.cargar_imagen(ruta)
 
     El callback recibe: (blob_bytes, preview_ctkimage)
     """
 
-    SELECTION_SIZE = 600  # Tamano del cuadrado de seleccion
-    PREVIEW_SIZE = 200    # Tamano de la vista previa
+    SELECTION_SIZE = 600
+    PREVIEW_SIZE = 200
 
     def __init__(self, parent, on_crop=None, on_cancel=None, shape="square"):
         super().__init__(parent, fg_color=COLORS["bg_principal"])
         self.on_crop = on_crop
         self.on_cancel = on_cancel
-        self.shape = shape  # "square", "circle"
+        self.shape = shape
         self.result = None
 
         self.original_image = None
@@ -37,7 +36,6 @@ class ImageCropper(ctk.CTkFrame):
         self.offset_x = 0
         self.offset_y = 0
 
-        # Coordenadas del area de seleccion (en coordenadas de la imagen original)
         self.sel_x = 0
         self.sel_y = 0
         self.sel_w = 0
@@ -49,14 +47,11 @@ class ImageCropper(ctk.CTkFrame):
         self._build_ui()
 
     def _build_ui(self):
-        """Construye la interfaz embebida."""
-        # Contenedor principal (sin header, lo pone el contenedor padre)
         main = ctk.CTkFrame(self, fg_color="transparent")
         main.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # Panel izquierdo: Canvas con imagen
         left_panel = ctk.CTkFrame(main, fg_color=COLORS["bg_card"], corner_radius=15,
-                                   border_color=COLORS["border_card"], border_width=2)
+                                border_color=COLORS["border_card"], border_width=2)
         left_panel.pack(side="left", fill="both", expand=True, padx=(0, 10))
 
         self.canvas = tk.Canvas(
@@ -65,24 +60,21 @@ class ImageCropper(ctk.CTkFrame):
         )
         self.canvas.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Panel derecho: Controles y preview
         right_panel = ctk.CTkFrame(main, fg_color="transparent", width=300)
         right_panel.pack(side="right", fill="y", padx=(10, 0))
         right_panel.pack_propagate(False)
 
-        # Instrucciones
         instrucciones = ctk.CTkFrame(right_panel, fg_color=COLORS["bg_dialog"], corner_radius=10)
         instrucciones.pack(fill="x", pady=(0, 10))
         ctk.CTkLabel(
             instrucciones,
             text="Arrastra el area para moverla.\n"
-                 "Usa el deslizador para ajustar el tamano.\n"
-                 "Haz doble clic para recortar.",
+                "Usa el deslizador para ajustar el tamano.\n"
+                "Haz doble clic para recortar.",
             font=FONTS["small"], text_color=COLORS["text_secondary"],
             wraplength=200
         ).pack(padx=10, pady=10)
 
-        # Vista previa
         ctk.CTkLabel(
             right_panel, text="Vista previa:", font=FONTS["heading"],
             text_color=COLORS["text_primary"]
@@ -99,7 +91,6 @@ class ImageCropper(ctk.CTkFrame):
         self.preview_label = ctk.CTkLabel(self.preview_frame, text="")
         self.preview_label.pack(expand=True)
 
-        # Controles de tamano
         ctk.CTkLabel(
             right_panel, text="Tamaño del recorte:", font=FONTS["body"],
             text_color=COLORS["text_primary"]
@@ -129,7 +120,6 @@ class ImageCropper(ctk.CTkFrame):
         )
         self.lbl_size.pack(pady=(0, 10))
 
-        # Botones
         btn_frame = ctk.CTkFrame(right_panel, fg_color="transparent")
         btn_frame.pack(pady=15)
 
@@ -140,32 +130,10 @@ class ImageCropper(ctk.CTkFrame):
             text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(pady=5)
 
-        # Boton Cancelar eliminado - lo gestiona el contenedor padre
-
-        # Eventos del canvas
         self.canvas.bind("<Button-1>", self._on_press)
         self.canvas.bind("<B1-Motion>", self._on_drag)
         self.canvas.bind("<ButtonRelease-1>", self._on_release)
-        # Zoom con rueda del raton desactivado - usar el deslizador
-        # self.canvas.bind("<MouseWheel>", self._on_scroll)
         self.canvas.bind("<Double-Button-1>", lambda e: self._aplicar_recorte())
-
-    def seleccionar_archivo(self):
-        """Abre dialogo para seleccionar imagen y la carga."""
-        ruta = filedialog.askopenfilename(
-            parent=self.winfo_toplevel(),
-            title="Seleccionar imagen",
-            filetypes=[
-                ("Imagenes", "*.png *.jpg *.jpeg *.gif *.bmp *.webp"),
-                ("PNG", "*.png"),
-                ("JPEG", "*.jpg *.jpeg"),
-                ("Todos", "*.*")
-            ]
-        )
-        if not ruta:
-            self._cancelar()
-            return False
-        return self.cargar_imagen(ruta)
 
     def cargar_imagen(self, ruta):
         """Carga una imagen desde una ruta."""
@@ -176,37 +144,32 @@ class ImageCropper(ctk.CTkFrame):
             self._dibujar()
             return True
         except Exception as e:
+            from tkinter import messagebox
             messagebox.showerror("Error", f"No se pudo cargar la imagen: {e}")
             self._cancelar()
             return False
 
     def _ajustar_imagen_al_canvas(self):
-        """Escala la imagen para que quepa en el canvas manteniendo proporcion."""
         self.canvas.update_idletasks()
         canvas_w = self.canvas.winfo_width() or 500
         canvas_h = self.canvas.winfo_height() or 400
 
         img_w, img_h = self.original_image.size
 
-        # Calcular escala para que quepa
         scale_w = canvas_w / img_w
         scale_h = canvas_h / img_h
-        self.scale = min(scale_w, scale_h) * 0.9  # 90% para dejar margen
+        self.scale = min(scale_w, scale_h) * 0.9
 
-        # Calcular tamano display
         disp_w = int(img_w * self.scale)
         disp_h = int(img_h * self.scale)
 
-        # Centrar
         self.offset_x = (canvas_w - disp_w) // 2
         self.offset_y = (canvas_h - disp_h) // 2
 
-        # Redimensionar para display
         self.display_image = self.original_image.resize((disp_w, disp_h), Image.LANCZOS)
         self.photo_image = ImageTk.PhotoImage(self.display_image)
 
     def _inicializar_seleccion(self):
-        """Inicializa el area de seleccion centrada."""
         disp_w = self.display_image.width
         disp_h = self.display_image.height
 
@@ -214,7 +177,6 @@ class ImageCropper(ctk.CTkFrame):
         self.sel_w = int(size / self.scale)
         self.sel_h = int(size / self.scale)
 
-        # Centrar en la imagen original
         img_w, img_h = self.original_image.size
         self.sel_x = (img_w - self.sel_w) // 2
         self.sel_y = (img_h - self.sel_h) // 2
@@ -222,7 +184,6 @@ class ImageCropper(ctk.CTkFrame):
         self._actualizar_preview()
 
     def _dibujar(self):
-        """Dibuja la imagen y el area de seleccion en el canvas."""
         self.canvas.delete("all")
 
         if self.photo_image:
@@ -231,13 +192,11 @@ class ImageCropper(ctk.CTkFrame):
                 image=self.photo_image, anchor="nw"
             )
 
-        # Calcular coordenadas de la seleccion en pantalla
         screen_x = self.offset_x + int(self.sel_x * self.scale)
         screen_y = self.offset_y + int(self.sel_y * self.scale)
         screen_w = int(self.sel_w * self.scale)
         screen_h = int(self.sel_h * self.scale)
 
-        # Dibujar overlay oscuro fuera de la seleccion
         self.canvas.update_idletasks()
         canvas_w = self.canvas.winfo_width() or 500
         canvas_h = self.canvas.winfo_height() or 400
@@ -245,15 +204,12 @@ class ImageCropper(ctk.CTkFrame):
         overlay_color = "#000000"
 
         if self.shape == "circle":
-            # Para circulo: dibujar overlay con agujero circular
             overlay_img = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 100))
 
-            # Hacer transparente el area del circulo
             cx = screen_x + screen_w // 2
             cy = screen_y + screen_h // 2
             radius = min(screen_w, screen_h) // 2
 
-            # Dibujar circulo transparente
             for y in range(canvas_h):
                 for x in range(canvas_w):
                     dx = x - cx
@@ -264,47 +220,39 @@ class ImageCropper(ctk.CTkFrame):
             self.overlay_photo = ImageTk.PhotoImage(overlay_img)
             self.canvas.create_image(0, 0, image=self.overlay_photo, anchor="nw")
 
-            # Borde del circulo
             self.canvas.create_oval(
                 cx - radius, cy - radius, cx + radius, cy + radius,
                 outline="#D2691E", width=3, dash=(6, 4)
             )
         else:
-            # Para cuadrado: rectangulos oscuros alrededor
-            # Arriba
             self.canvas.create_rectangle(
                 0, 0, canvas_w, screen_y,
                 fill=overlay_color, stipple="gray50", outline=""
             )
-            # Abajo
             self.canvas.create_rectangle(
                 0, screen_y + screen_h, canvas_w, canvas_h,
                 fill=overlay_color, stipple="gray50", outline=""
             )
-            # Izquierda
             self.canvas.create_rectangle(
                 0, screen_y, screen_x, screen_y + screen_h,
                 fill=overlay_color, stipple="gray50", outline=""
             )
-            # Derecha
             self.canvas.create_rectangle(
                 screen_x + screen_w, screen_y, canvas_w, screen_y + screen_h,
                 fill=overlay_color, stipple="gray50", outline=""
             )
 
-            # Borde de la seleccion
             self.canvas.create_rectangle(
                 screen_x, screen_y, screen_x + screen_w, screen_y + screen_h,
                 outline="#D2691E", width=3, dash=(6, 4)
             )
 
-            # Esquinas de la seleccion
             corner_size = 8
             for cx, cy in [
-                (screen_x, screen_y),  # TL
-                (screen_x + screen_w, screen_y),  # TR
-                (screen_x, screen_y + screen_h),  # BL
-                (screen_x + screen_w, screen_y + screen_h),  # BR
+                (screen_x, screen_y),
+                (screen_x + screen_w, screen_y),
+                (screen_x, screen_y + screen_h),
+                (screen_x + screen_w, screen_y + screen_h),
             ]:
                 self.canvas.create_oval(
                     cx - corner_size, cy - corner_size,
@@ -313,7 +261,6 @@ class ImageCropper(ctk.CTkFrame):
                 )
 
     def _on_press(self, event):
-        """Inicia el arrastre de la seleccion."""
         screen_x = self.offset_x + int(self.sel_x * self.scale)
         screen_y = self.offset_y + int(self.sel_y * self.scale)
         screen_w = int(self.sel_w * self.scale)
@@ -328,7 +275,7 @@ class ImageCropper(ctk.CTkFrame):
             dentro = dx*dx + dy*dy <= radius*radius
         else:
             dentro = (screen_x <= event.x <= screen_x + screen_w and
-                     screen_y <= event.y <= screen_y + screen_h)
+                    screen_y <= event.y <= screen_y + screen_h)
 
         if dentro:
             self.dragging = True
@@ -336,7 +283,6 @@ class ImageCropper(ctk.CTkFrame):
             self.sel_start = (self.sel_x, self.sel_y)
 
     def _on_drag(self, event):
-        """Mueve la seleccion."""
         if not self.dragging:
             return
 
@@ -358,35 +304,9 @@ class ImageCropper(ctk.CTkFrame):
         self._actualizar_preview()
 
     def _on_release(self, event):
-        """Termina el arrastre."""
         self.dragging = False
 
-    def _on_scroll(self, event):
-        """Ajusta el tamano de la seleccion con la rueda del raton."""
-        delta = 20 if event.delta > 0 else -20
-        nuevo_size = self.sel_w + delta
-
-        img_w, img_h = self.original_image.size
-        max_size = min(img_w, img_h)
-        nuevo_size = max(50, min(nuevo_size, max_size))
-
-        centro_x = self.sel_x + self.sel_w // 2
-        centro_y = self.sel_y + self.sel_h // 2
-
-        self.sel_w = nuevo_size
-        self.sel_h = nuevo_size
-
-        self.sel_x = max(0, min(centro_x - nuevo_size // 2, img_w - nuevo_size))
-        self.sel_y = max(0, min(centro_y - nuevo_size // 2, img_h - nuevo_size))
-
-        self.slider_size.set(nuevo_size)
-        self.lbl_size.configure(text=f"{nuevo_size}px")
-
-        self._dibujar()
-        self._actualizar_preview()
-
     def _on_size_change(self, value):
-        """Cambia el tamano desde el slider."""
         nuevo_size = int(value)
 
         img_w, img_h = self.original_image.size
@@ -407,7 +327,6 @@ class ImageCropper(ctk.CTkFrame):
         self._actualizar_preview()
 
     def _actualizar_preview(self):
-        """Actualiza la vista previa del recorte."""
         if self.original_image is None:
             return
 
@@ -426,11 +345,10 @@ class ImageCropper(ctk.CTkFrame):
         preview = crop.resize((self.PREVIEW_SIZE, self.PREVIEW_SIZE), Image.LANCZOS)
 
         self.preview_image = ctk.CTkImage(light_image=preview, dark_image=preview,
-                                           size=(self.PREVIEW_SIZE, self.PREVIEW_SIZE))
+                                        size=(self.PREVIEW_SIZE, self.PREVIEW_SIZE))
         self.preview_label.configure(image=self.preview_image)
 
     def _aplicar_recorte(self):
-        """Aplica el recorte y devuelve el resultado via callback."""
         if self.original_image is None:
             return
 
@@ -447,7 +365,6 @@ class ImageCropper(ctk.CTkFrame):
                 draw.ellipse((0, 0, w, h), fill=255)
                 crop.putalpha(mask)
 
-            # Redimensionar a tamano maximo razonable
             max_size = 1200
             crop.thumbnail((max_size, max_size), Image.LANCZOS)
 
@@ -469,30 +386,10 @@ class ImageCropper(ctk.CTkFrame):
                 self.on_crop(blob, preview_ctk)
 
         except Exception as e:
+            from tkinter import messagebox
             messagebox.showerror("Error", f"No se pudo recortar la imagen: {e}")
 
     def _cancelar(self):
-        """Cancela sin guardar."""
         self.result = None
         if self.on_cancel:
             self.on_cancel()
-        if self.on_crop:
-            self.on_crop(None, None)
-
-
-def seleccionar_imagen_recortada(parent, on_crop, on_cancel=None, shape="square"):
-    """
-    Funcion utilitaria para crear un recortador embebido.
-    Devuelve el widget para que el llamador lo empaquete donde quiera.
-
-    Args:
-        parent: Widget padre
-        on_crop: Callback(blob, preview_image) o (None, None) si cancela
-        on_cancel: Callback opcional al cancelar
-        shape: "square" o "circle"
-
-    Returns:
-        ImageCropper widget (ya empaquetado, listo para usar)
-    """
-    cropper = ImageCropper(parent, on_crop=on_crop, on_cancel=on_cancel, shape=shape)
-    return cropper

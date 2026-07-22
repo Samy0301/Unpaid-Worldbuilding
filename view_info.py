@@ -1,4 +1,4 @@
-"""Vista de información general de la historia"""
+"""Vista de informacion general de la historia"""
 
 import customtkinter as ctk
 from config import FONTS, COLORS
@@ -20,7 +20,6 @@ class InfoHistoriaView(ctk.CTkFrame, DialogMixin):
         for w in self.winfo_children():
             w.destroy()
 
-        # Scrollable frame principal para todo el contenido
         scroll = ctk.CTkScrollableFrame(
             self, fg_color="transparent",
             scrollbar_button_color=COLORS["btn_primary"],
@@ -39,7 +38,7 @@ class InfoHistoriaView(ctk.CTkFrame, DialogMixin):
         top = ctk.CTkFrame(f, fg_color="transparent")
         top.pack(fill="x", padx=20, pady=(20, 0))
         ctk.CTkButton(
-            top, text="✏️ Editar Historia", command=self._editar,
+            top, text="Editar Historia", command=self._editar,
             corner_radius=15, width=140,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"]
@@ -51,12 +50,12 @@ class InfoHistoriaView(ctk.CTkFrame, DialogMixin):
         ctk.CTkLabel(f, image=img, text="").pack(pady=10)
 
         ctk.CTkLabel(
-            f, text=f"🌟 {self.hv.h_nombre} 🌟", font=FONTS["title"],
+            f, text=self.hv.h_nombre, font=FONTS["title"],
             text_color=COLORS["text_primary"]
         ).pack()
 
         ctk.CTkLabel(
-            f, text="🍁 Resumen 🍁", font=FONTS["script"],
+            f, text="Resumen", font=FONTS["script"],
             text_color=COLORS["accent"]
         ).pack(pady=(20, 5))
 
@@ -73,7 +72,7 @@ class InfoHistoriaView(ctk.CTkFrame, DialogMixin):
             ).pack()
 
         ctk.CTkLabel(
-            f, text="🌻 Plot General 🌻", font=FONTS["script"],
+            f, text="Plot General", font=FONTS["script"],
             text_color=COLORS["accent"]
         ).pack(pady=(20, 5))
 

@@ -127,8 +127,6 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
     def _borrar_historia(self, hid, nombre):
         if messagebox.askyesno("Confirmar", f"Borrar '{nombre}' y todo su contenido?"):
             try:
-                # Orden correcto de borrado respetando foreign keys
-                # Primero las tablas hijas, luego las padres
                 self.db.ejecutar(
                     "DELETE FROM partes_capitulo WHERE capitulo_id IN (SELECT id FROM capitulos WHERE historia_id=?)",
                     (hid,)

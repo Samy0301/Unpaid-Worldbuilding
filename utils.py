@@ -3,7 +3,7 @@
 import io
 import os
 import customtkinter as ctk
-from PIL import Image, ImageDraw, ImageTk
+from PIL import Image, ImageDraw
 from config import FLOWERS_DIR, COLORS, FONTS
 
 
@@ -97,7 +97,7 @@ class ImageUtils:
 
     @staticmethod
     def blob_a_tkimage(blob, size=(70, 70)):
-        """Convierte BLOB a PhotoImage circular para Canvas. Tamano por defecto 70x70."""
+        """Convierte BLOB a PhotoImage circular para Canvas."""
         if not blob:
             img = Image.new("RGBA", size, (0, 0, 0, 0))
             draw = ImageDraw.Draw(img)
@@ -112,6 +112,7 @@ class ImageUtils:
             draw = ImageDraw.Draw(mask)
             draw.ellipse((0, 0, size[0], size[1]), fill=255)
             img.putalpha(mask)
+        from PIL import ImageTk
         return ImageTk.PhotoImage(img)
 
     @staticmethod
@@ -144,8 +145,6 @@ class ImageUtils:
         if img:
             lbl = ctk.CTkLabel(parent, image=img, text="")
             lbl.pack(pady=pady)
-            return lbl
-        return None
 
 
 class TextUtils:
@@ -154,9 +153,7 @@ class TextUtils:
     @staticmethod
     def _estimate_height(text: str, width_px: int, font_name: str, font_size: int) -> int:
         """Estima la altura en pixeles necesaria para mostrar todo el texto wrappeado."""
-        # Ancho aproximado por caracter (Segoe UI es proporcional, ~0.55 del tamano de fuente)
         avg_char_width = font_size * 0.55
-        # Ancho util: restar padding interno del CTkTextbox (~20px cada lado)
         usable_width = max(50, width_px - 40)
         chars_per_line = max(10, int(usable_width / avg_char_width))
 
@@ -165,7 +162,6 @@ class TextUtils:
             if not paragraph.strip():
                 lines += 1
                 continue
-            # Contar palabras y calcular wrapping
             words = paragraph.split(" ")
             current_line_len = 0
             for word in words:
@@ -177,20 +173,15 @@ class TextUtils:
                     current_line_len = word_len
                 else:
                     current_line_len += 1 + word_len
-            lines += 1  # ultima linea del parrafo
+            lines += 1
 
-        # Altura por linea: tamano de fuente + interlineado
         line_height = font_size + 6
-        padding = 16  # padding interno top+bottom del textbox
+        padding = 16
         return max(40, lines * line_height + padding)
 
     @staticmethod
     def justified_textbox(parent, text: str, font=None, text_color=None, fg_color=None, padx=15):
-        """Crea un CTkTextbox en modo solo lectura que se adapta al ancho del padre.
-
-        El texto se muestra con word-wrap automatico, ocupando todo el ancho disponible
-        del contenedor padre menos el margen especificado por `padx`.
-        """
+        """Crea un CTkTextbox en modo solo lectura que se adapta al ancho del padre."""
         if font is None:
             font = FONTS["body"]
         if text_color is None:
@@ -200,11 +191,9 @@ class TextUtils:
 
         font_name, font_size = font[0], font[1]
 
-        # Frame contenedor: ocupa todo el ancho del padre, con margen padx
         wrapper = ctk.CTkFrame(parent, fg_color="transparent")
         wrapper.pack(fill="x", padx=padx, pady=5)
 
-        # CTkTextbox: solo lectura, sin scrollbars, con wrap por palabra
         tb = ctk.CTkTextbox(
             wrapper,
             fg_color=fg_color,
@@ -217,16 +206,13 @@ class TextUtils:
         )
         tb.pack(fill="x", expand=True)
 
-        # Insertar texto (temporalmente habilitar edicion)
         tb.configure(state="normal")
         tb.delete("1.0", "end")
         tb.insert("1.0", text)
         tb.configure(state="disabled")
 
         def _update_size(event=None):
-            """Ajusta la altura del textbox para que quepa todo el texto wrappeado."""
             try:
-                # Si el evento es del wrapper, usar su ancho; si no, obtenerlo directamente
                 if event and hasattr(event, "widget") and event.widget == wrapper._w:
                     wrapper_width = event.width
                 else:
@@ -234,19 +220,14 @@ class TextUtils:
                     wrapper_width = wrapper.winfo_width()
 
                 if wrapper_width < 50:
-                    return  # Aun no esta renderizado
+                    return
 
-                # Calcular altura necesaria
                 height = TextUtils._estimate_height(text, wrapper_width, font_name, font_size)
-
-                # Actualizar solo la altura; el ancho se maneja con pack fill="x"
                 tb.configure(height=height)
             except Exception:
                 pass
 
-        # Actualizar cuando el wrapper cambie de tamano
         wrapper.bind("<Configure>", _update_size)
-        # Actualizaciones diferidas para cuando todo este renderizado
         wrapper.after(50, _update_size)
         wrapper.after(150, lambda: _update_size())
         wrapper.after(300, lambda: _update_size())

@@ -1,8 +1,8 @@
 """Paneles reutilizables para formularios"""
 
 import customtkinter as ctk
-from tkinter import filedialog, messagebox
-from config import FONTS, COLORS, FLOWERS_DIR
+from tkinter import messagebox
+from config import FONTS, COLORS
 from utils import ImageUtils, TextUtils
 
 
@@ -77,11 +77,9 @@ class _BaseDialog(ctk.CTkFrame):
         btn_text = "Foto cargada" if existing_blob else label
         btn_color = COLORS["success"] if existing_blob else COLORS["btn_primary"]
 
-        # Frame para la foto y el boton
         foto_frame = ctk.CTkFrame(self.scroll, fg_color="transparent")
         foto_frame.pack(pady=15)
 
-        # Preview de la foto actual
         self._preview_label = ctk.CTkLabel(foto_frame, text="")
         self._preview_label.pack(pady=(0, 10))
         self._actualizar_preview(existing_blob, shape)
@@ -90,7 +88,6 @@ class _BaseDialog(ctk.CTkFrame):
             from image_cropper import ImageCropper
             import tkinter.filedialog as fd
 
-            # 1. Abrir filedialog para elegir imagen
             ruta = fd.askopenfilename(
                 parent=self.winfo_toplevel(),
                 title="Seleccionar imagen",
@@ -104,7 +101,6 @@ class _BaseDialog(ctk.CTkFrame):
             if not ruta:
                 return
 
-            # 2. Crear panel de recorte que cubre TODO el dialogo
             cropper_overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
             cropper_overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
 
@@ -113,13 +109,11 @@ class _BaseDialog(ctk.CTkFrame):
                     self._foto_blob = blob
                     self._actualizar_preview(blob, shape)
                     btn.configure(text="Foto cargada", fg_color=COLORS["success"])
-                # Destruir el panel de recorte y volver al formulario
                 cropper_overlay.destroy()
 
             def on_cancel():
                 cropper_overlay.destroy()
 
-            # Header del panel de recorte
             header = ctk.CTkFrame(cropper_overlay, fg_color="transparent")
             header.pack(fill="x", padx=15, pady=(10, 0))
             shape_text = "circulo" if shape == "circle" else "cuadrado"
@@ -134,7 +128,6 @@ class _BaseDialog(ctk.CTkFrame):
                 font=FONTS["caption"]
             ).pack(side="right")
 
-            # El recortador embebido ocupa todo el espacio restante
             cropper = ImageCropper(
                 cropper_overlay,
                 on_crop=on_crop,
@@ -156,12 +149,11 @@ class _BaseDialog(ctk.CTkFrame):
         """Actualiza la vista previa de la foto."""
         if blob:
             if shape == "circle":
-                # Preview circular para personajes
                 img = ImageUtils.blob_a_ctkimage_rounded(blob, (180, 180), radius=90)
             else:
                 img = ImageUtils.blob_a_ctkimage_rounded(blob, (180, 180), radius=20)
             self._preview_label.configure(image=img, text="")
-            self._preview_label.image = img  # Mantener referencia
+            self._preview_label.image = img
         else:
             self._preview_label.configure(image="", text="(Sin foto)")
 
@@ -259,7 +251,7 @@ class PersonajeDialog(_BaseDialog):
             ctk.CTkLabel(self.scroll, image=flower, text="").pack(pady=(10, 5))
 
         self.entry_nombre = self._add_field("Nombre *", "entry", default=defaults["nombre"])
-        self.entry_apodo = self._add_field("Apodo", "entry", default=defaults.get("apodo", ""))
+        self.entry_apodo = self._add_field("Apodo", "entry", default=defaults["apodo"])
         self.combo_cat = self._add_field("Categoria", "combo", values=self.CATEGORIAS, default=defaults["categoria"])
         self.entry_edad = self._add_field("Edad", "entry", default=defaults["edad"])
         self.entry_familia = self._add_field("Familia / Clan", "entry", default=defaults["familia"])
@@ -267,7 +259,6 @@ class PersonajeDialog(_BaseDialog):
         self.text_trauma = self._add_field("Traumas / Conflictos", "text", default=defaults["trauma"], height=120)
         self.text_rol = self._add_field("Rol en el plot", "text", default=defaults["rol"], height=120)
         self.text_guia = self._add_field("Guia de trama por capitulo", "text", default=defaults["guia"], height=120)
-        # Personajes usan forma circular
         self._add_foto_selector("Foto del personaje", defaults["foto"], shape="square")
 
         ctk.CTkButton(
@@ -500,7 +491,6 @@ class FichaPersonajeDialog(ctk.CTkFrame):
             font=FONTS["caption"]
         ).pack(side="right", padx=5)
 
-        # Scrollable frame para el contenido de la ficha
         scroll = ctk.CTkScrollableFrame(
             self, fg_color="transparent",
             scrollbar_button_color=COLORS["btn_primary"],
@@ -511,14 +501,13 @@ class FichaPersonajeDialog(ctk.CTkFrame):
         p = db.obtener_uno("SELECT * FROM personajes WHERE id=?", (personaje_id,))
         if not p:
             ctk.CTkLabel(scroll, text="Personaje no encontrado", text_color=COLORS["text_primary"],
-                         font=FONTS["body"]).pack(pady=20)
+                        font=FONTS["body"]).pack(pady=20)
             return
 
         flower = ImageUtils.load_flower("card_accent.png", (60, 60))
         if flower:
             ctk.CTkLabel(scroll, image=flower, text="").pack(pady=10)
 
-        # Foto circular grande en la ficha
         img = ImageUtils.blob_a_ctkimage_rounded(p[11], (220, 220), radius=110)
         ctk.CTkLabel(scroll, image=img, text="").pack(pady=10)
         ctk.CTkLabel(

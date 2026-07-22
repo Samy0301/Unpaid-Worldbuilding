@@ -9,8 +9,7 @@ def _get_base_dir():
     """Detecta si estamos en un ejecutable PyInstaller o en desarrollo"""
     if getattr(sys, 'frozen', False):
         return sys._MEIPASS
-    else:
-        return os.path.dirname(os.path.abspath(__file__))
+    return os.path.dirname(os.path.abspath(__file__))
 
 
 def _get_user_data_dir():
@@ -19,7 +18,7 @@ def _get_user_data_dir():
         base = os.environ.get("APPDATA") or os.path.expanduser("~")
     elif sys.platform == "darwin":
         base = os.path.expanduser("~/Library/Application Support")
-    else: 
+    else:
         base = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
 
     path = os.path.join(base, "NovelPlanner")
@@ -27,21 +26,17 @@ def _get_user_data_dir():
     return path
 
 
-# --- Rutas de ASSETS (dentro del ejecutable, solo lectura) ---
 BASE_DIR = _get_base_dir()
 ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 FLOWERS_DIR = os.path.join(ASSETS_DIR, "flowers")
 
-# --- Rutas de DATOS (fuera del ejecutable, lectura/escritura) ---
 DATA_DIR = _get_user_data_dir()
 DB_PATH = os.path.join(DATA_DIR, "novel_planner.db")
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# --- Tema ---
 ctk.set_appearance_mode("Light")
 ctk.set_default_color_theme("green")
 
-# --- Paleta de colores ---
 COLORS = {
     "bg_principal":    "#FFF8F0",
     "bg_sidebar":      "#F5E6D3",
@@ -64,7 +59,6 @@ COLORS = {
     "gray":            "#BCAAA4",
 }
 
-# --- Estilos (fuentes aumentadas) ---
 FONTS = {
     "title":       ("Playfair Display", 36, "bold"),
     "subtitle":    ("Playfair Display", 28, "bold"),
@@ -75,7 +69,6 @@ FONTS = {
     "script":      ("Segoe Script", 16),
 }
 
-# --- Colores de relaciones (vinculos) ---
 RELATION_COLORS = {
     "padre":        "#E63946",
     "madre":        "#8B2252",
@@ -103,7 +96,6 @@ RELATION_COLORS = {
     "ex":           "#795548",
 }
 
-# --- Dimensiones ---
 WINDOW_SIZE = "1200x800"
 CARD_WIDTH = 280
 CARD_HEIGHT = 320

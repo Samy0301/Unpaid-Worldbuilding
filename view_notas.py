@@ -15,10 +15,8 @@ class NotasView(ctk.CTkFrame, DialogMixin):
         self.historia_id = historia_id
         self.pack(fill="both", expand=True)
 
-        # Asegurar que la tabla de notas existe
         self._crear_tabla_notas()
 
-        # --- Header ---
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=10)
         ctk.CTkLabel(
@@ -37,7 +35,6 @@ class NotasView(ctk.CTkFrame, DialogMixin):
 
         ImageUtils.add_divider(self, pady=5)
 
-        # --- Filtros / etiquetas ---
         filtros_frame = ctk.CTkFrame(self, fg_color="transparent")
         filtros_frame.pack(fill="x", padx=5, pady=(0, 5))
 
@@ -56,14 +53,12 @@ class NotasView(ctk.CTkFrame, DialogMixin):
         self.combo_filtro.set("Todas")
         self.combo_filtro.pack(side="left")
 
-        # --- Lista de notas ---
         self.lista_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.lista_frame.pack(fill="both", expand=True)
 
         self._refresh()
 
     def _crear_tabla_notas(self):
-        """Crea la tabla de notas si no existe."""
         self.db.ejecutar("""
             CREATE TABLE IF NOT EXISTS notas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -93,7 +88,6 @@ class NotasView(ctk.CTkFrame, DialogMixin):
                 (self.historia_id, filtro)
             )
 
-        # Actualizar combo de filtros con etiquetas existentes
         etiquetas = self.db.obtener(
             "SELECT DISTINCT etiqueta FROM notas WHERE historia_id=? ORDER BY etiqueta",
             (self.historia_id,)
@@ -118,7 +112,6 @@ class NotasView(ctk.CTkFrame, DialogMixin):
             self._crear_tarjeta_nota(nid, titulo, contenido, etiqueta, fecha)
 
     def _crear_tarjeta_nota(self, nid, titulo, contenido, etiqueta, fecha):
-        """Crea una tarjeta visual para cada nota."""
         card = ctk.CTkFrame(
             self.lista_frame, corner_radius=15,
             fg_color=COLORS["bg_card"], border_color=COLORS["border_card"], border_width=2
@@ -126,11 +119,9 @@ class NotasView(ctk.CTkFrame, DialogMixin):
         card.pack(fill="x", pady=8, padx=5)
         ImageUtils.add_corner_flowers(card, (30, 30))
 
-        # Header de la tarjeta
         header = ctk.CTkFrame(card, fg_color="transparent")
         header.pack(fill="x", padx=15, pady=(12, 5))
 
-        # Indicador de color segun etiqueta
         color_etiqueta = self._color_etiqueta(etiqueta)
         indicador = ctk.CTkFrame(header, width=10, height=10, corner_radius=5, fg_color=color_etiqueta)
         indicador.pack(side="left", padx=(0, 8))
@@ -141,7 +132,6 @@ class NotasView(ctk.CTkFrame, DialogMixin):
             text_color=COLORS["text_primary"]
         ).pack(side="left")
 
-        # Etiqueta y fecha
         meta = ctk.CTkFrame(header, fg_color="transparent")
         meta.pack(side="right")
         ctk.CTkLabel(
@@ -153,7 +143,6 @@ class NotasView(ctk.CTkFrame, DialogMixin):
             text_color=COLORS["gray"]
         ).pack(side="left")
 
-        # Contenido
         if contenido:
             TextUtils.justified_textbox(
                 card, contenido, padx=15,
@@ -161,7 +150,6 @@ class NotasView(ctk.CTkFrame, DialogMixin):
                 fg_color=COLORS["bg_card"]
             )
 
-        # Botones de accion
         btns = ctk.CTkFrame(card, fg_color="transparent")
         btns.pack(fill="x", padx=15, pady=(5, 10))
         ctk.CTkButton(
@@ -178,16 +166,15 @@ class NotasView(ctk.CTkFrame, DialogMixin):
         ).pack(side="left", padx=2)
 
     def _color_etiqueta(self, etiqueta):
-        """Devuelve un color segun la etiqueta de la nota."""
         colores = {
-            "idea": "#FFD700",
-            "personaje": "#E63946",
-            "escena": "#0066CC",
-            "dialogo": "#228B22",
-            "plot": "#8A2BE2",
-            "mundo": "#20B2AA",
-            "duda": "#FF6600",
-            "recordatorio": "#708090",
+            "idea": "#ECDC82",
+            "personaje": "#E9737D",
+            "escena": "#6BA8E5",
+            "dialogo": "#87EF87",
+            "plot": "#B67CEC",
+            "mundo": "#93EBE6",
+            "duda": "#F3AB7B",
+            "recordatorio": "#7893AE",
         }
         return colores.get(etiqueta, "#D2691E")
 
@@ -239,7 +226,6 @@ class NotaDialog(ctk.CTkFrame):
             etiqueta = "idea"
             dialog_title = "Nueva Nota"
 
-        # Header
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", pady=(5, 0))
         ctk.CTkLabel(
@@ -260,7 +246,6 @@ class NotaDialog(ctk.CTkFrame):
         scroll = ctk.CTkScrollableFrame(self, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Titulo
         ctk.CTkLabel(
             scroll, text="Titulo (opcional):", font=FONTS["heading"],
             text_color=COLORS["text_primary"]
@@ -274,7 +259,6 @@ class NotaDialog(ctk.CTkFrame):
         self.entry_titulo.insert(0, titulo or "")
         self.entry_titulo.pack()
 
-        # Etiqueta
         ctk.CTkLabel(
             scroll, text="Etiqueta:", font=FONTS["heading"],
             text_color=COLORS["text_primary"]
@@ -288,7 +272,6 @@ class NotaDialog(ctk.CTkFrame):
         self.combo_etiqueta.set(etiqueta)
         self.combo_etiqueta.pack()
 
-        # Contenido
         ctk.CTkLabel(
             scroll, text="Contenido:", font=FONTS["heading"],
             text_color=COLORS["text_primary"]
@@ -303,7 +286,6 @@ class NotaDialog(ctk.CTkFrame):
             self.text_contenido.insert("1.0", contenido)
         self.text_contenido.pack()
 
-        # Boton guardar
         ctk.CTkButton(
             scroll, text="Guardar", command=self._guardar, corner_radius=15,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],

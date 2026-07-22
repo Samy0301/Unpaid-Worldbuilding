@@ -94,7 +94,6 @@ class PersonajesView(ctk.CTkFrame, DialogMixin):
 
             ImageUtils.add_corner_flowers(card, (40, 40))
 
-            # Foto mas grande: 200x200 cuadrada con esquinas redondeadas
             img = ImageUtils.blob_a_ctkimage_rounded(foto, size=(200, 200), radius=20)
             ctk.CTkLabel(card, image=img, text="").pack(pady=(15, 0))
             ctk.CTkLabel(

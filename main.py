@@ -8,7 +8,7 @@ from view_historia import HistoriaView
 
 
 class NovelPlannerApp(ctk.CTk):
-    """Aplicación principal"""
+    """Aplicacion principal"""
 
     def __init__(self):
         super().__init__()
