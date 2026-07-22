@@ -87,16 +87,62 @@ class _BaseDialog(ctk.CTkFrame):
         self._actualizar_preview(existing_blob, shape)
 
         def seleccionar():
-            # Abrir el recortador de imagenes
-            from image_cropper import seleccionar_imagen_recortada
+            from image_cropper import ImageCropper
+            import tkinter.filedialog as fd
+
+            # 1. Abrir filedialog para elegir imagen
+            ruta = fd.askopenfilename(
+                parent=self.winfo_toplevel(),
+                title="Seleccionar imagen",
+                filetypes=[
+                    ("Imagenes", "*.png *.jpg *.jpeg *.gif *.bmp *.webp"),
+                    ("PNG", "*.png"),
+                    ("JPEG", "*.jpg *.jpeg"),
+                    ("Todos", "*.*")
+                ]
+            )
+            if not ruta:
+                return
+
+            # 2. Crear panel de recorte que cubre TODO el dialogo
+            cropper_overlay = ctk.CTkFrame(self, fg_color=COLORS["bg_principal"])
+            cropper_overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
 
             def on_crop(blob, preview):
                 if blob:
                     self._foto_blob = blob
                     self._actualizar_preview(blob, shape)
                     btn.configure(text="Foto cargada", fg_color=COLORS["success"])
+                # Destruir el panel de recorte y volver al formulario
+                cropper_overlay.destroy()
 
-            seleccionar_imagen_recortada(self, on_crop=on_crop, shape=shape)
+            def on_cancel():
+                cropper_overlay.destroy()
+
+            # Header del panel de recorte
+            header = ctk.CTkFrame(cropper_overlay, fg_color="transparent")
+            header.pack(fill="x", padx=15, pady=(10, 0))
+            shape_text = "circulo" if shape == "circle" else "cuadrado"
+            ctk.CTkLabel(
+                header, text=f"Recortar imagen ({shape_text})",
+                font=FONTS["subtitle"], text_color=COLORS["text_primary"]
+            ).pack(side="left")
+            ctk.CTkButton(
+                header, text="X Cancelar", width=100, height=32, corner_radius=16,
+                command=on_cancel, fg_color=COLORS["danger"],
+                hover_color=COLORS["danger_hover"], text_color=COLORS["text_light"],
+                font=FONTS["caption"]
+            ).pack(side="right")
+
+            # El recortador embebido ocupa todo el espacio restante
+            cropper = ImageCropper(
+                cropper_overlay,
+                on_crop=on_crop,
+                on_cancel=on_cancel,
+                shape=shape
+            )
+            cropper.pack(fill="both", expand=True, padx=10, pady=10)
+            cropper.cargar_imagen(ruta)
 
         btn = ctk.CTkButton(
             foto_frame, text=btn_text, command=seleccionar, corner_radius=15,

@@ -84,7 +84,7 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
             ImageUtils.add_corner_flowers(card, (50, 50))
 
             img_w = CARD_WIDTH - 4
-            img_h = 180
+            img_h = 210
             img = ImageUtils.blob_a_ctkimage_rounded(
                 foto, size=(img_w, img_h), radius=13, top_only=True
             )
