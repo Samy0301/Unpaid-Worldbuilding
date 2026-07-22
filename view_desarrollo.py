@@ -1,4 +1,4 @@
-"""Vista de capítulos y sus partes"""
+"""Vista de capitulos y sus partes"""
 
 import customtkinter as ctk
 from tkinter import messagebox
@@ -8,7 +8,7 @@ from dialogs import CapituloDialog, ParteDialog
 
 
 class DesarrolloView(ctk.CTkFrame, DialogMixin):
-    """Lista de capítulos con gestión de partes internas"""
+    """Lista de capitulos con gestion de partes internas"""
 
     def __init__(self, parent, db, historia_id):
         super().__init__(parent, fg_color="transparent")
@@ -19,14 +19,14 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
         top = ctk.CTkFrame(self, fg_color="transparent")
         top.pack(fill="x", pady=10)
         ctk.CTkLabel(
-            top, text="📝 Desarrollo por Capítulos", font=FONTS["subtitle"],
+            top, text="Desarrollo por Capitulos", font=FONTS["subtitle"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
         flower = ImageUtils.load_flower("card_accent.png", (35, 35))
         if flower:
             ctk.CTkLabel(top, image=flower, text="").pack(side="left", padx=8)
         ctk.CTkButton(
-            top, text="➕ Nuevo Capítulo", command=self._crear, corner_radius=15,
+            top, text="Nuevo Capitulo", command=self._crear, corner_radius=15,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(side="right")
@@ -54,7 +54,7 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
             empty.pack(pady=30, padx=20)
             ImageUtils.add_corner_flowers(empty, (50, 50))
             ctk.CTkLabel(
-                empty, text="No hay capítulos aún\n¡Empieza a escribir tu historia! 🌟",
+                empty, text="No hay capitulos aun\nEmpieza a escribir tu historia!",
                 font=FONTS["body"], text_color=COLORS["text_secondary"]
             ).pack(pady=30, padx=30)
             return
@@ -70,25 +70,25 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
             header = ctk.CTkFrame(card, fg_color="transparent")
             header.pack(fill="x", padx=15, pady=10)
             ctk.CTkLabel(
-                header, text=f"➡️ Cap. {num}: {titulo}", font=FONTS["heading"],
+                header, text=f"Cap. {num}: {titulo}", font=FONTS["heading"],
                 text_color=COLORS["text_primary"]
             ).pack(side="left")
 
             btns = ctk.CTkFrame(header, fg_color="transparent")
             btns.pack(side="right")
             ctk.CTkButton(
-                btns, text="Ver partes 🌺", width=90, corner_radius=10,
+                btns, text="Ver partes", width=90, corner_radius=10,
                 fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
                 text_color=COLORS["text_light"],
                 command=lambda c=cid: self._ver_partes(c)
             ).pack(side="left", padx=2)
             ctk.CTkButton(
-                btns, text="✏️", width=40, corner_radius=10,
+                btns, text="Editar", width=60, corner_radius=10,
                 fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
                 command=lambda c=cid: self._editar(c)
             ).pack(side="left", padx=2)
             ctk.CTkButton(
-                btns, text="🗑", width=40,
+                btns, text="X", width=40,
                 fg_color=COLORS["danger"], hover_color=COLORS["danger_hover"],
                 text_color=COLORS["text_light"], corner_radius=10,
                 command=lambda c=cid, n=num: self._borrar(c, n)
@@ -96,12 +96,12 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
 
             if plot:
                 ctk.CTkLabel(
-                    card, text="Plot:", font=FONTS["small"],
+                    card, text="Plot:", font=FONTS["heading"],
                     text_color=COLORS["accent"]
-                ).pack(anchor="w", padx=15, pady=(0, 2))
+                ).pack(anchor="w", padx=15, pady=(0, 4))
                 TextUtils.justified_textbox(
                     card, plot, padx=15,
-                    font=FONTS["small"], text_color=COLORS["text_secondary"],
+                    font=FONTS["body"], text_color=COLORS["text_secondary"],
                     fg_color=COLORS["bg_card"]
                 )
 
@@ -118,7 +118,7 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
         )
 
     def _borrar(self, cid, num):
-        if messagebox.askyesno("Confirmar", f"¿Borrar el Capítulo {num}?"):
+        if messagebox.askyesno("Confirmar", f"Borrar el Capitulo {num}?"):
             self.db.ejecutar("DELETE FROM partes_capitulo WHERE capitulo_id=?", (cid,))
             self.db.ejecutar("DELETE FROM capitulos WHERE id=?", (cid,))
             self._refresh()
@@ -141,22 +141,22 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
         header = ctk.CTkFrame(container, fg_color="transparent")
         header.pack(fill="x", padx=10, pady=10)
         ctk.CTkLabel(
-            header, text="🔆 Partes del Capítulo 🔆", font=FONTS["subtitle"],
+            header, text="Partes del Capitulo", font=FONTS["subtitle"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
         ctk.CTkButton(
-            header, text="✕", width=28, height=28, corner_radius=14,
+            header, text="X", width=32, height=32, corner_radius=16,
             command=_cerrar_overlay, fg_color=COLORS["danger"],
             hover_color=COLORS["danger_hover"], text_color=COLORS["text_light"],
             font=FONTS["caption"]
         ).pack(side="right")
 
         ctk.CTkButton(
-            header, text="➕ Añadir Parte",
+            header, text="Anadir Parte",
             command=lambda: self._crear_parte(scroll, capitulo_id),
             corner_radius=15,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
-            text_color=COLORS["text_light"]
+            text_color=COLORS["text_light"], font=FONTS["heading"]
         ).pack(side="right", padx=10)
 
         ImageUtils.add_divider(container, pady=5)
@@ -185,16 +185,16 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
             hdr = ctk.CTkFrame(f, fg_color="transparent")
             hdr.pack(fill="x", padx=10, pady=(10, 5))
             ctk.CTkLabel(
-                hdr, text=f"➡️ {nombre}", font=FONTS["heading"],
+                hdr, text=f"{nombre}", font=FONTS["heading"],
                 text_color=COLORS["text_primary"]
             ).pack(side="left")
             ctk.CTkButton(
-                hdr, text="✏️", width=35, corner_radius=8,
+                hdr, text="Editar", width=60, corner_radius=8,
                 fg_color=COLORS["btn_accent"], hover_color=COLORS["btn_accent_hover"],
                 command=lambda p=pid, n=nombre, c=contenido: self._editar_parte(scroll, capitulo_id, p, n, c)
             ).pack(side="right", padx=2)
             ctk.CTkButton(
-                hdr, text="🗑", width=35,
+                hdr, text="X", width=35,
                 fg_color=COLORS["danger"], hover_color=COLORS["danger_hover"],
                 text_color=COLORS["text_light"], corner_radius=8,
                 command=lambda p=pid, n=nombre: self._borrar_parte(scroll, capitulo_id, p, n)
@@ -224,6 +224,6 @@ class DesarrolloView(ctk.CTkFrame, DialogMixin):
         )
 
     def _borrar_parte(self, scroll, capitulo_id, pid, nombre):
-        if messagebox.askyesno("Confirmar", f"¿Borrar la parte '{nombre}'?"):
+        if messagebox.askyesno("Confirmar", f"Borrar la parte '{nombre}'?"):
             self.db.ejecutar("DELETE FROM partes_capitulo WHERE id=?", (pid,))
             self._render_partes(scroll, capitulo_id)

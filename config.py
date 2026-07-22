@@ -64,18 +64,18 @@ COLORS = {
     "gray":            "#BCAAA4",
 }
 
-# --- Estilos ---
+# --- Estilos (fuentes aumentadas) ---
 FONTS = {
-    "title":       ("Playfair Display", 32, "bold"),
-    "subtitle":    ("Playfair Display", 24, "bold"),
-    "heading":     ("Segoe UI", 16, "bold"),
-    "body":        ("Segoe UI", 13),
-    "small":       ("Segoe UI", 11),
-    "caption":     ("Segoe UI", 10),
-    "script":      ("Segoe Script", 14),
+    "title":       ("Playfair Display", 36, "bold"),
+    "subtitle":    ("Playfair Display", 28, "bold"),
+    "heading":     ("Segoe UI", 18, "bold"),
+    "body":        ("Segoe UI", 14),
+    "small":       ("Segoe UI", 12),
+    "caption":     ("Segoe UI", 11),
+    "script":      ("Segoe Script", 16),
 }
 
-# --- Colores de relaciones ---
+# --- Colores de relaciones (vinculos) ---
 RELATION_COLORS = {
     "padre":        "#E63946",
     "madre":        "#8B2252",

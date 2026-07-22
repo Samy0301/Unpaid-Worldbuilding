@@ -1,4 +1,4 @@
-"""Contenedor principal de una historia con sidebar de navegación"""
+"""Contenedor principal de una historia con sidebar de navegacion"""
 
 import customtkinter as ctk
 from config import FONTS, COLORS
@@ -7,17 +7,19 @@ from view_info import InfoHistoriaView
 from view_personajes import PersonajesView
 from view_conexiones import ConexionesView
 from view_desarrollo import DesarrolloView
+from view_notas import NotasView
 
 
 class HistoriaView(ctk.CTkFrame):
-    """Frame contenedor con sidebar y área de contenido dinámico"""
+    """Frame contenedor con sidebar y area de contenido dinamico"""
 
     NAV_ITEMS = [
-        ("🏠  Info", "info"),
-        ("👤  Personajes", "personajes"),
-        ("🕸️  Conexiones", "conexiones"),
-        ("📝  Desarrollo", "desarrollo"),
-        ("⬅️  Volver", "dashboard"),
+        ("Info", "info"),
+        ("Personajes", "personajes"),
+        ("Conexiones", "conexiones"),
+        ("Desarrollo", "desarrollo"),
+        ("Notas", "notas"),
+        ("Volver", "dashboard"),
     ]
 
     def __init__(self, parent, app, historia_id):
@@ -44,7 +46,7 @@ class HistoriaView(ctk.CTkFrame):
             bg_lbl = ctk.CTkLabel(self.sidebar, image=sidebar_bg, text="")
             bg_lbl.place(relwidth=1, relheight=1)
 
-        ctk.CTkLabel(self.sidebar, text="🍀", font=("Segoe UI", 40)).pack(pady=(30, 10))
+        ctk.CTkLabel(self.sidebar, text="*", font=("Segoe UI", 40)).pack(pady=(30, 10))
         self._lbl_nombre = ctk.CTkLabel(
             self.sidebar,
             text=self._truncate(self.h_nombre, 15),
@@ -103,6 +105,8 @@ class HistoriaView(ctk.CTkFrame):
             self._current_subview = ConexionesView(self.content, self.db, self.historia_id)
         elif nombre == "desarrollo":
             self._current_subview = DesarrolloView(self.content, self.db, self.historia_id)
+        elif nombre == "notas":
+            self._current_subview = NotasView(self.content, self.db, self.historia_id)
 
     def mostrar_info(self):
         self._cambiar_vista("info")
