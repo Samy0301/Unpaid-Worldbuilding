@@ -71,8 +71,9 @@ class _BaseDialog(ctk.CTkFrame):
             raise ValueError(f"Tipo de widget desconocido: {widget_type}")
         return w
 
-    def _add_foto_selector(self, label: str = "Subir foto", existing_blob=None):
+    def _add_foto_selector(self, label: str = "Subir foto", existing_blob=None, shape="square"):
         self._foto_blob = existing_blob
+        self._foto_shape = shape
         btn_text = "Foto cargada" if existing_blob else label
         btn_color = COLORS["success"] if existing_blob else COLORS["btn_primary"]
 
@@ -83,7 +84,7 @@ class _BaseDialog(ctk.CTkFrame):
         # Preview de la foto actual
         self._preview_label = ctk.CTkLabel(foto_frame, text="")
         self._preview_label.pack(pady=(0, 10))
-        self._actualizar_preview(existing_blob)
+        self._actualizar_preview(existing_blob, shape)
 
         def seleccionar():
             # Abrir el recortador de imagenes
@@ -92,10 +93,10 @@ class _BaseDialog(ctk.CTkFrame):
             def on_crop(blob, preview):
                 if blob:
                     self._foto_blob = blob
-                    self._actualizar_preview(blob)
+                    self._actualizar_preview(blob, shape)
                     btn.configure(text="Foto cargada", fg_color=COLORS["success"])
 
-            seleccionar_imagen_recortada(self, on_crop=on_crop)
+            seleccionar_imagen_recortada(self, on_crop=on_crop, shape=shape)
 
         btn = ctk.CTkButton(
             foto_frame, text=btn_text, command=seleccionar, corner_radius=15,
@@ -105,10 +106,14 @@ class _BaseDialog(ctk.CTkFrame):
         )
         btn.pack()
 
-    def _actualizar_preview(self, blob):
+    def _actualizar_preview(self, blob, shape="square"):
         """Actualiza la vista previa de la foto."""
         if blob:
-            img = ImageUtils.blob_a_ctkimage(blob, (150, 150))
+            if shape == "circle":
+                # Preview circular para personajes
+                img = ImageUtils.blob_a_ctkimage_rounded(blob, (180, 180), radius=90)
+            else:
+                img = ImageUtils.blob_a_ctkimage_rounded(blob, (180, 180), radius=20)
             self._preview_label.configure(image=img, text="")
             self._preview_label.image = img  # Mantener referencia
         else:
@@ -149,7 +154,7 @@ class HistoriaDialog(_BaseDialog):
         self.entry_nombre = self._add_field("Nombre de la novela *", "entry", default=nombre)
         self.entry_resumen = self._add_field("Resumen general", "text", default=resumen, height=140)
         self.entry_plot = self._add_field("Plot / Trama general", "text", default=plot, height=160)
-        self._add_foto_selector("Subir portada", foto)
+        self._add_foto_selector("Subir portada", foto, shape="square")
 
         ctk.CTkButton(
             self.scroll, text="Guardar", command=self._guardar,
@@ -216,7 +221,8 @@ class PersonajeDialog(_BaseDialog):
         self.text_trauma = self._add_field("Traumas / Conflictos", "text", default=defaults["trauma"], height=120)
         self.text_rol = self._add_field("Rol en el plot", "text", default=defaults["rol"], height=120)
         self.text_guia = self._add_field("Guia de trama por capitulo", "text", default=defaults["guia"], height=120)
-        self._add_foto_selector("Foto del personaje", defaults["foto"])
+        # Personajes usan forma circular
+        self._add_foto_selector("Foto del personaje", defaults["foto"], shape="square")
 
         ctk.CTkButton(
             self.scroll, text="Guardar", command=self._guardar,
@@ -466,7 +472,8 @@ class FichaPersonajeDialog(ctk.CTkFrame):
         if flower:
             ctk.CTkLabel(scroll, image=flower, text="").pack(pady=10)
 
-        img = ImageUtils.blob_a_ctkimage(p[11], (200, 200))
+        # Foto circular grande en la ficha
+        img = ImageUtils.blob_a_ctkimage_rounded(p[11], (220, 220), radius=110)
         ctk.CTkLabel(scroll, image=img, text="").pack(pady=10)
         ctk.CTkLabel(
             scroll, text=p[2], font=("Playfair Display", 26, "bold"),

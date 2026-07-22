@@ -96,14 +96,14 @@ class ImageUtils:
         return ctk.CTkImage(light_image=img, dark_image=img, size=size)
 
     @staticmethod
-    def blob_a_tkimage(blob, size=(60, 60)):
-        """Convierte BLOB a PhotoImage circular para Canvas"""
+    def blob_a_tkimage(blob, size=(70, 70)):
+        """Convierte BLOB a PhotoImage circular para Canvas. Tamano por defecto 70x70."""
         if not blob:
             img = Image.new("RGBA", size, (0, 0, 0, 0))
             draw = ImageDraw.Draw(img)
-            draw.ellipse([2, 2, size[0]-2, size[1]-2], outline="#D2691E", width=2)
+            draw.ellipse([3, 3, size[0]-3, size[1]-3], outline="#D2691E", width=3)
             cx, cy = size[0]//2, size[1]//2
-            draw.ellipse([cx-4, cy-4, cx+4, cy+4], fill="#DAA520", outline="#E67E22")
+            draw.ellipse([cx-5, cy-5, cx+5, cy+5], fill="#DAA520", outline="#E67E22")
         else:
             img = Image.open(io.BytesIO(blob))
             img = ImageUtils.recortar_cuadrado(img)

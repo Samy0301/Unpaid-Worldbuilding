@@ -216,29 +216,41 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         self._ordenar_capas()
 
     def _crear_nodo(self, pid, nombre, foto_blob, categoria, x, y):
-        foto_tk = ImageUtils.blob_a_tkimage(foto_blob)
-        r = NODE_RADIUS
+        r = NODE_RADIUS  # Radio del nodo (35 por defecto, pero lo haremos mas grande)
+
+        # Usar foto circular mas grande: 70x70
+        foto_size = 70
+        foto_tk = ImageUtils.blob_a_tkimage(foto_blob, size=(foto_size, foto_size))
 
         # Color y grosor del borde segun categoria
         borde_color = CATEGORIA_BORDE.get(categoria, "#D2691E")
         borde_grosor = CATEGORIA_BORDE_GROSOR.get(categoria, 3)
 
+        # Circulo de fondo (borde)
         circulo = self.canvas.create_oval(
-            x - r, y - r, x + r, y + r,
-            fill="#FFF8F0", outline=borde_color, width=borde_grosor,
+            x - foto_size//2 - 3, y - foto_size//2 - 3,
+            x + foto_size//2 + 3, y + foto_size//2 + 3,
+            fill=borde_color, outline=borde_color, width=0,
             tags=("nodos", f"nodo_{pid}")
         )
+
+        # Imagen circular
         imagen = self.canvas.create_image(
             x, y, image=foto_tk,
             tags=("nodos", f"nodo_{pid}")
         )
+
+        # Texto debajo
         texto = self.canvas.create_text(
-            x, y + r + 15, text=nombre, fill="#000000",
-            font=("Segoe UI", 10, "bold"),
+            x, y + foto_size//2 + 18, text=nombre, fill="#000000",
+            font=("Segoe UI", 11, "bold"),
             tags=("nodos", f"nodo_{pid}")
         )
+
+        # Hit area (invisible, para clicks)
         hit = self.canvas.create_oval(
-            x - r, y - r, x + r, y + r,
+            x - foto_size//2, y - foto_size//2,
+            x + foto_size//2, y + foto_size//2,
             fill="", outline="",
             tags=("nodos", f"nodo_{pid}")
         )
@@ -246,7 +258,8 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
 
         self.nodos[pid] = {
             "x": x, "y": y, "items": [circulo, imagen, texto, hit],
-            "foto_tk": foto_tk, "nombre": nombre, "categoria": categoria
+            "foto_tk": foto_tk, "nombre": nombre, "categoria": categoria,
+            "foto_size": foto_size
         }
 
     def _coords_conexion(self, p1, p2):
@@ -257,10 +270,15 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
         if dist == 0:
             return None
         dx, dy = dx / dist, dy / dist
-        x1b = x1 + dx * NODE_RADIUS
-        y1b = y1 + dy * NODE_RADIUS
-        x2b = x2 - dx * NODE_RADIUS
-        y2b = y2 - dy * NODE_RADIUS
+
+        # Usar el tamano de la foto como radio
+        r1 = self.nodos[p1]["foto_size"] // 2 + 5
+        r2 = self.nodos[p2]["foto_size"] // 2 + 5
+
+        x1b = x1 + dx * r1
+        y1b = y1 + dy * r1
+        x2b = x2 - dx * r2
+        y2b = y2 - dy * r2
         mx, my = (x1b + x2b) / 2, (y1b + y2b) / 2
         return x1b, y1b, x2b, y2b, mx, my
 
@@ -348,8 +366,10 @@ class ConexionesView(ctk.CTkFrame, DialogMixin):
             if d == 0:
                 return
             ux, uy = dx / d, dy / d
-            x1 = cx + ux * NODE_RADIUS
-            y1 = cy + uy * NODE_RADIUS
+
+            r = self.nodos[pid]["foto_size"] // 2 + 5
+            x1 = cx + ux * r
+            y1 = cy + uy * r
 
             if self._drag["linea_temp"] is None:
                 self._drag["linea_temp"] = self.canvas.create_line(

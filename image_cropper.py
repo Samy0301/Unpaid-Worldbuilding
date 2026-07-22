@@ -1,4 +1,4 @@
-"""Recortador de imágenes con selección manual de área"""
+"""Recortador de imagenes con seleccion manual de area"""
 
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -9,26 +9,26 @@ from config import FONTS, COLORS
 
 class ImageCropper(ctk.CTkToplevel):
     """
-    Ventana modal para seleccionar un área cuadrada de una imagen.
+    Ventana modal para seleccionar un area de una imagen.
 
     Uso:
-        cropper = ImageCropper(parent, on_crop=callback)
+        cropper = ImageCropper(parent, on_crop=callback, shape="circle")
         cropper.wait_window()  # Bloquea hasta que el usuario termine
 
     El callback recibe: (blob_bytes, preview_ctkimage)
     """
 
-    SELECTION_SIZE = 300  # Tamaño del cuadrado de selección
-    PREVIEW_SIZE = 200    # Tamaño de la vista previa
+    SELECTION_SIZE = 600  # Tamano del cuadrado de seleccion
+    PREVIEW_SIZE = 200    # Tamano de la vista previa
 
-    def __init__(self, parent, on_crop=None, title="Recortar imagen", aspect_ratio="square"):
+    def __init__(self, parent, on_crop=None, title="Recortar imagen", shape="square"):
         super().__init__(parent)
         self.title(title)
         self.on_crop = on_crop
-        self.aspect_ratio = aspect_ratio  # "square", "portrait", "landscape"
+        self.shape = shape  # "square", "circle", "portrait", "landscape"
         self.result = None
 
-        # Configurar tamaño y posición centrada
+        # Configurar tamano y posicion centrada
         self.geometry("900x700")
         self.resizable(False, False)
         self.transient(parent)
@@ -41,7 +41,7 @@ class ImageCropper(ctk.CTkToplevel):
         self.offset_x = 0
         self.offset_y = 0
 
-        # Coordenadas del área de selección (en coordenadas de la imagen original)
+        # Coordenadas del area de seleccion (en coordenadas de la imagen original)
         self.sel_x = 0
         self.sel_y = 0
         self.sel_w = 0
@@ -61,8 +61,9 @@ class ImageCropper(ctk.CTkToplevel):
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", padx=20, pady=15)
 
+        shape_text = "circulo" if self.shape == "circle" else "cuadrado"
         ctk.CTkLabel(
-            header, text="Selecciona el area de la imagen que quieres guardar",
+            header, text=f"Selecciona el area de la imagen ({shape_text})",
             font=FONTS["heading"], text_color=COLORS["text_primary"]
         ).pack(side="left")
 
@@ -98,9 +99,9 @@ class ImageCropper(ctk.CTkToplevel):
         instrucciones.pack(fill="x", pady=(0, 15))
         ctk.CTkLabel(
             instrucciones,
-            text="Arrastra el cuadrado para moverlo.\n"
+            text="Arrastra el area para moverla.\n"
                  "Usa la rueda del raton para zoom.\n"
-                 "Haz doble clic en el cuadrado para recortar.",
+                 "Haz doble clic para recortar.",
             font=FONTS["small"], text_color=COLORS["text_secondary"],
             wraplength=220
         ).pack(padx=10, pady=10)
@@ -122,9 +123,9 @@ class ImageCropper(ctk.CTkToplevel):
         self.preview_label = ctk.CTkLabel(self.preview_frame, text="")
         self.preview_label.pack(expand=True)
 
-        # Controles de tamaño
+        # Controles de tamano
         ctk.CTkLabel(
-            right_panel, text="Tamaño del recorte:", font=FONTS["body"],
+            right_panel, text="Tamano del recorte:", font=FONTS["body"],
             text_color=COLORS["text_primary"]
         ).pack(pady=(15, 5))
 
@@ -170,7 +171,7 @@ class ImageCropper(ctk.CTkToplevel):
         self.canvas.bind("<Double-Button-1>", lambda e: self._aplicar_recorte())
 
     def _cargar_imagen(self):
-        """Abre diálogo para seleccionar imagen y la carga."""
+        """Abre dialogo para seleccionar imagen y la carga."""
         ruta = filedialog.askopenfilename(
             parent=self,
             title="Seleccionar imagen",
@@ -195,7 +196,7 @@ class ImageCropper(ctk.CTkToplevel):
             self._cancelar()
 
     def _ajustar_imagen_al_canvas(self):
-        """Escala la imagen para que quepa en el canvas manteniendo proporción."""
+        """Escala la imagen para que quepa en el canvas manteniendo proporcion."""
         canvas_w = self.canvas.winfo_width() or 600
         canvas_h = self.canvas.winfo_height() or 500
 
@@ -206,7 +207,7 @@ class ImageCropper(ctk.CTkToplevel):
         scale_h = canvas_h / img_h
         self.scale = min(scale_w, scale_h) * 0.9  # 90% para dejar margen
 
-        # Calcular tamaño display
+        # Calcular tamano display
         disp_w = int(img_w * self.scale)
         disp_h = int(img_h * self.scale)
 
@@ -219,7 +220,7 @@ class ImageCropper(ctk.CTkToplevel):
         self.photo_image = ImageTk.PhotoImage(self.display_image)
 
     def _inicializar_seleccion(self):
-        """Inicializa el área de selección centrada."""
+        """Inicializa el area de seleccion centrada."""
         disp_w = self.display_image.width
         disp_h = self.display_image.height
 
@@ -235,7 +236,7 @@ class ImageCropper(ctk.CTkToplevel):
         self._actualizar_preview()
 
     def _dibujar(self):
-        """Dibuja la imagen y el área de selección en el canvas."""
+        """Dibuja la imagen y el area de seleccion en el canvas."""
         self.canvas.delete("all")
 
         if self.photo_image:
@@ -244,77 +245,114 @@ class ImageCropper(ctk.CTkToplevel):
                 image=self.photo_image, anchor="nw"
             )
 
-        # Calcular coordenadas de la selección en pantalla
+        # Calcular coordenadas de la seleccion en pantalla
         screen_x = self.offset_x + int(self.sel_x * self.scale)
         screen_y = self.offset_y + int(self.sel_y * self.scale)
         screen_w = int(self.sel_w * self.scale)
         screen_h = int(self.sel_h * self.scale)
 
-        # Dibujar overlay oscuro fuera de la selección
+        # Dibujar overlay oscuro fuera de la seleccion
         canvas_w = self.canvas.winfo_width() or 600
         canvas_h = self.canvas.winfo_height() or 500
 
-        # Rectángulos oscuros alrededor
         overlay_color = "#000000"
-        overlay_alpha = 0.4
 
-        # Arriba
-        self.canvas.create_rectangle(
-            0, 0, canvas_w, screen_y,
-            fill=overlay_color, stipple="gray50", outline=""
-        )
-        # Abajo
-        self.canvas.create_rectangle(
-            0, screen_y + screen_h, canvas_w, canvas_h,
-            fill=overlay_color, stipple="gray50", outline=""
-        )
-        # Izquierda
-        self.canvas.create_rectangle(
-            0, screen_y, screen_x, screen_y + screen_h,
-            fill=overlay_color, stipple="gray50", outline=""
-        )
-        # Derecha
-        self.canvas.create_rectangle(
-            screen_x + screen_w, screen_y, canvas_w, screen_y + screen_h,
-            fill=overlay_color, stipple="gray50", outline=""
-        )
+        if self.shape == "circle":
+            # Para circulo: dibujar overlay con agujero circular
+            # Crear una imagen de overlay con transparencia
+            overlay_img = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 100))
+            overlay_draw = ImageDraw.Draw(overlay_img)
 
-        # Borde de la selección
-        self.canvas.create_rectangle(
-            screen_x, screen_y, screen_x + screen_w, screen_y + screen_h,
-            outline="#D2691E", width=3, dash=(6, 4)
-        )
+            # Hacer transparente el area del circulo
+            cx = screen_x + screen_w // 2
+            cy = screen_y + screen_h // 2
+            radius = min(screen_w, screen_h) // 2
 
-        # Esquinas de la selección
-        corner_size = 8
-        for cx, cy in [
-            (screen_x, screen_y),  # TL
-            (screen_x + screen_w, screen_y),  # TR
-            (screen_x, screen_y + screen_h),  # BL
-            (screen_x + screen_w, screen_y + screen_h),  # BR
-        ]:
+            # Dibujar circulo transparente
+            for y in range(canvas_h):
+                for x in range(canvas_w):
+                    dx = x - cx
+                    dy = y - cy
+                    if dx*dx + dy*dy <= radius*radius:
+                        overlay_img.putpixel((x, y), (0, 0, 0, 0))
+
+            self.overlay_photo = ImageTk.PhotoImage(overlay_img)
+            self.canvas.create_image(0, 0, image=self.overlay_photo, anchor="nw")
+
+            # Borde del circulo
             self.canvas.create_oval(
-                cx - corner_size, cy - corner_size,
-                cx + corner_size, cy + corner_size,
-                fill="#D2691E", outline=""
+                cx - radius, cy - radius, cx + radius, cy + radius,
+                outline="#D2691E", width=3, dash=(6, 4)
+            )
+        else:
+            # Para cuadrado: rectangulos oscuros alrededor
+            # Arriba
+            self.canvas.create_rectangle(
+                0, 0, canvas_w, screen_y,
+                fill=overlay_color, stipple="gray50", outline=""
+            )
+            # Abajo
+            self.canvas.create_rectangle(
+                0, screen_y + screen_h, canvas_w, canvas_h,
+                fill=overlay_color, stipple="gray50", outline=""
+            )
+            # Izquierda
+            self.canvas.create_rectangle(
+                0, screen_y, screen_x, screen_y + screen_h,
+                fill=overlay_color, stipple="gray50", outline=""
+            )
+            # Derecha
+            self.canvas.create_rectangle(
+                screen_x + screen_w, screen_y, canvas_w, screen_y + screen_h,
+                fill=overlay_color, stipple="gray50", outline=""
             )
 
+            # Borde de la seleccion
+            self.canvas.create_rectangle(
+                screen_x, screen_y, screen_x + screen_w, screen_y + screen_h,
+                outline="#D2691E", width=3, dash=(6, 4)
+            )
+
+            # Esquinas de la seleccion
+            corner_size = 8
+            for cx, cy in [
+                (screen_x, screen_y),  # TL
+                (screen_x + screen_w, screen_y),  # TR
+                (screen_x, screen_y + screen_h),  # BL
+                (screen_x + screen_w, screen_y + screen_h),  # BR
+            ]:
+                self.canvas.create_oval(
+                    cx - corner_size, cy - corner_size,
+                    cx + corner_size, cy + corner_size,
+                    fill="#D2691E", outline=""
+                )
+
     def _on_press(self, event):
-        """Inicia el arrastre de la selección."""
-        # Verificar si el click está dentro de la selección
+        """Inicia el arrastre de la seleccion."""
+        # Verificar si el click esta dentro de la seleccion
         screen_x = self.offset_x + int(self.sel_x * self.scale)
         screen_y = self.offset_y + int(self.sel_y * self.scale)
         screen_w = int(self.sel_w * self.scale)
         screen_h = int(self.sel_h * self.scale)
 
-        if (screen_x <= event.x <= screen_x + screen_w and
-            screen_y <= event.y <= screen_y + screen_h):
+        if self.shape == "circle":
+            cx = screen_x + screen_w // 2
+            cy = screen_y + screen_h // 2
+            radius = min(screen_w, screen_h) // 2
+            dx = event.x - cx
+            dy = event.y - cy
+            dentro = dx*dx + dy*dy <= radius*radius
+        else:
+            dentro = (screen_x <= event.x <= screen_x + screen_w and
+                     screen_y <= event.y <= screen_y + screen_h)
+
+        if dentro:
             self.dragging = True
             self.drag_start = (event.x, event.y)
             self.sel_start = (self.sel_x, self.sel_y)
 
     def _on_drag(self, event):
-        """Mueve la selección."""
+        """Mueve la seleccion."""
         if not self.dragging:
             return
 
@@ -323,7 +361,7 @@ class ImageCropper(ctk.CTkToplevel):
 
         img_w, img_h = self.original_image.size
 
-        # Calcular nueva posición
+        # Calcular nueva posicion
         new_x = self.sel_start[0] + dx
         new_y = self.sel_start[1] + dy
 
@@ -342,7 +380,7 @@ class ImageCropper(ctk.CTkToplevel):
         self.dragging = False
 
     def _on_scroll(self, event):
-        """Ajusta el tamaño de la selección con la rueda del ratón."""
+        """Ajusta el tamano de la seleccion con la rueda del raton."""
         delta = 20 if event.delta > 0 else -20
         nuevo_size = self.sel_w + delta
 
@@ -367,7 +405,7 @@ class ImageCropper(ctk.CTkToplevel):
         self._actualizar_preview()
 
     def _on_size_change(self, value):
-        """Cambia el tamaño desde el slider."""
+        """Cambia el tamano desde el slider."""
         nuevo_size = int(value)
 
         img_w, img_h = self.original_image.size
@@ -399,6 +437,15 @@ class ImageCropper(ctk.CTkToplevel):
             self.sel_x + self.sel_w, self.sel_y + self.sel_h
         ))
 
+        # Aplicar mascara circular si es necesario
+        if self.shape == "circle":
+            # Crear mascara circular
+            mask = Image.new("L", crop.size, 0)
+            draw = ImageDraw.Draw(mask)
+            w, h = crop.size
+            draw.ellipse((0, 0, w, h), fill=255)
+            crop.putalpha(mask)
+
         # Redimensionar para preview
         preview = crop.resize((self.PREVIEW_SIZE, self.PREVIEW_SIZE), Image.LANCZOS)
 
@@ -419,14 +466,25 @@ class ImageCropper(ctk.CTkToplevel):
                 self.sel_x + self.sel_w, self.sel_y + self.sel_h
             ))
 
-            # Redimensionar a tamaño máximo razonable
-            max_size = 600
+            # Aplicar mascara circular si es necesario
+            if self.shape == "circle":
+                mask = Image.new("L", crop.size, 0)
+                draw = ImageDraw.Draw(mask)
+                w, h = crop.size
+                draw.ellipse((0, 0, w, h), fill=255)
+                crop.putalpha(mask)
+
+            # Redimensionar a tamano maximo razonable
+            max_size = 1200
             crop.thumbnail((max_size, max_size), Image.LANCZOS)
 
             # Convertir a blob
             import io
             buffer = io.BytesIO()
-            crop.convert("RGB").save(buffer, format="PNG")
+            if self.shape == "circle":
+                crop.save(buffer, format="PNG")
+            else:
+                crop.convert("RGB").save(buffer, format="PNG")
             blob = buffer.getvalue()
 
             # Crear preview para devolver
@@ -452,13 +510,14 @@ class ImageCropper(ctk.CTkToplevel):
         self.destroy()
 
 
-def seleccionar_imagen_recortada(parent, on_crop):
+def seleccionar_imagen_recortada(parent, on_crop, shape="square"):
     """
-    Función utilitaria para abrir el recortador.
+    Funcion utilitaria para abrir el recortador.
 
     Args:
         parent: Widget padre
         on_crop: Callback(blob, preview_image) o (None, None) si cancela
+        shape: "square" o "circle"
     """
-    cropper = ImageCropper(parent, on_crop=on_crop)
+    cropper = ImageCropper(parent, on_crop=on_crop, shape=shape)
     return cropper
