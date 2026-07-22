@@ -1,4 +1,4 @@
-"""Utilidades de imágenes, UI y mixins"""
+"""Utilidades de imagenes, UI y mixins"""
 
 import io
 import os
@@ -8,7 +8,7 @@ from config import FLOWERS_DIR, COLORS, FONTS
 
 
 class DialogMixin:
-    """Mixin reutilizable para abrir diálogos embebidos con overlay"""
+    """Mixin reutilizable para abrir dialogos embebidos con overlay"""
 
     def abrir_dialogo_embebido(self, parent, DialogClass, *args, on_close=None, width=720, height=680, **kwargs):
         overlay = ctk.CTkFrame(parent, fg_color=COLORS["bg_principal"])
@@ -32,7 +32,7 @@ class DialogMixin:
 
 
 class ImageUtils:
-    """Manejo de imágenes para avatares, portadas, nodos y decoraciones"""
+    """Manejo de imagenes para avatares, portadas, nodos y decoraciones"""
 
     @staticmethod
     def blob_a_ctkimage(blob, size=(150, 150)):
@@ -149,14 +149,14 @@ class ImageUtils:
 
 
 class TextUtils:
-    """Utilidades para manejo de texto con justificación y adaptación automática"""
+    """Utilidades para manejo de texto con justificacion y adaptacion automatica"""
 
     @staticmethod
     def _estimate_height(text: str, width_px: int, font_name: str, font_size: int) -> int:
-        """Estima la altura en píxeles necesaria para mostrar todo el texto wrappeado."""
-        # Ancho aproximado por carácter (Segoe UI es proporcional, ~0.55 del tamaño de fuente)
+        """Estima la altura en pixeles necesaria para mostrar todo el texto wrappeado."""
+        # Ancho aproximado por caracter (Segoe UI es proporcional, ~0.55 del tamano de fuente)
         avg_char_width = font_size * 0.55
-        # Ancho útil: restar padding interno del CTkTextbox (~20px cada lado)
+        # Ancho util: restar padding interno del CTkTextbox (~20px cada lado)
         usable_width = max(50, width_px - 40)
         chars_per_line = max(10, int(usable_width / avg_char_width))
 
@@ -177,9 +177,9 @@ class TextUtils:
                     current_line_len = word_len
                 else:
                     current_line_len += 1 + word_len
-            lines += 1  # última línea del párrafo
+            lines += 1  # ultima linea del parrafo
 
-        # Altura por línea: tamaño de fuente + interlineado
+        # Altura por linea: tamano de fuente + interlineado
         line_height = font_size + 6
         padding = 16  # padding interno top+bottom del textbox
         return max(40, lines * line_height + padding)
@@ -188,7 +188,7 @@ class TextUtils:
     def justified_textbox(parent, text: str, font=None, text_color=None, fg_color=None, padx=15):
         """Crea un CTkTextbox en modo solo lectura que se adapta al ancho del padre.
 
-        El texto se muestra con word-wrap automático, ocupando todo el ancho disponible
+        El texto se muestra con word-wrap automatico, ocupando todo el ancho disponible
         del contenedor padre menos el margen especificado por `padx`.
         """
         if font is None:
@@ -217,7 +217,7 @@ class TextUtils:
         )
         tb.pack(fill="x", expand=True)
 
-        # Insertar texto (temporalmente habilitar edición)
+        # Insertar texto (temporalmente habilitar edicion)
         tb.configure(state="normal")
         tb.delete("1.0", "end")
         tb.insert("1.0", text)
@@ -234,7 +234,7 @@ class TextUtils:
                     wrapper_width = wrapper.winfo_width()
 
                 if wrapper_width < 50:
-                    return  # Aún no está renderizado
+                    return  # Aun no esta renderizado
 
                 # Calcular altura necesaria
                 height = TextUtils._estimate_height(text, wrapper_width, font_name, font_size)
@@ -244,9 +244,9 @@ class TextUtils:
             except Exception:
                 pass
 
-        # Actualizar cuando el wrapper cambie de tamaño
+        # Actualizar cuando el wrapper cambie de tamano
         wrapper.bind("<Configure>", _update_size)
-        # Actualizaciones diferidas para cuando todo esté renderizado
+        # Actualizaciones diferidas para cuando todo este renderizado
         wrapper.after(50, _update_size)
         wrapper.after(150, lambda: _update_size())
         wrapper.after(300, lambda: _update_size())

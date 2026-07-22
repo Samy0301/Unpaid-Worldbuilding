@@ -76,19 +76,43 @@ class _BaseDialog(ctk.CTkFrame):
         btn_text = "Foto cargada" if existing_blob else label
         btn_color = COLORS["success"] if existing_blob else COLORS["btn_primary"]
 
+        # Frame para la foto y el boton
+        foto_frame = ctk.CTkFrame(self.scroll, fg_color="transparent")
+        foto_frame.pack(pady=15)
+
+        # Preview de la foto actual
+        self._preview_label = ctk.CTkLabel(foto_frame, text="")
+        self._preview_label.pack(pady=(0, 10))
+        self._actualizar_preview(existing_blob)
+
         def seleccionar():
-            ruta = filedialog.askopenfilename(filetypes=[("Imagenes", "*.png *.jpg *.jpeg")])
-            if ruta:
-                self._foto_blob = ImageUtils.archivo_a_blob(ruta)
-                btn.configure(text="Foto cargada", fg_color=COLORS["success"])
+            # Abrir el recortador de imagenes
+            from image_cropper import seleccionar_imagen_recortada
+
+            def on_crop(blob, preview):
+                if blob:
+                    self._foto_blob = blob
+                    self._actualizar_preview(blob)
+                    btn.configure(text="Foto cargada", fg_color=COLORS["success"])
+
+            seleccionar_imagen_recortada(self, on_crop=on_crop)
 
         btn = ctk.CTkButton(
-            self.scroll, text=btn_text, command=seleccionar, corner_radius=15,
+            foto_frame, text=btn_text, command=seleccionar, corner_radius=15,
             fg_color=btn_color, hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"],
             font=FONTS["body"]
         )
-        btn.pack(pady=18)
+        btn.pack()
+
+    def _actualizar_preview(self, blob):
+        """Actualiza la vista previa de la foto."""
+        if blob:
+            img = ImageUtils.blob_a_ctkimage(blob, (150, 150))
+            self._preview_label.configure(image=img, text="")
+            self._preview_label.image = img  # Mantener referencia
+        else:
+            self._preview_label.configure(image="", text="(Sin foto)")
 
     def _cerrar(self):
         if self.on_close:
