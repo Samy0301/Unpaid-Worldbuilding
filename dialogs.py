@@ -116,13 +116,12 @@ class _BaseDialog(ctk.CTkFrame):
 
             header = ctk.CTkFrame(cropper_overlay, fg_color="transparent")
             header.pack(fill="x", padx=15, pady=(10, 0))
-            shape_text = "circulo" if shape == "circle" else "cuadrado"
             ctk.CTkLabel(
-                header, text=f"Recortar imagen ({shape_text})",
+                header, text=f"Recortar imagen",
                 font=FONTS["subtitle"], text_color=COLORS["text_primary"]
             ).pack(side="left")
             ctk.CTkButton(
-                header, text="X Cancelar", width=100, height=32, corner_radius=16,
+                header, text="X", width=100, height=32, corner_radius=16,
                 command=on_cancel, fg_color=COLORS["danger"],
                 hover_color=COLORS["danger_hover"], text_color=COLORS["text_light"],
                 font=FONTS["caption"]

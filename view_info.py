@@ -55,7 +55,7 @@ class InfoHistoriaView(ctk.CTkFrame, DialogMixin):
         ).pack()
 
         ctk.CTkLabel(
-            f, text="Resumen", font=FONTS["script"],
+            f, text="Resumen 🌟", font=FONTS["script"],
             text_color=COLORS["accent"]
         ).pack(pady=(20, 5))
 
@@ -72,7 +72,7 @@ class InfoHistoriaView(ctk.CTkFrame, DialogMixin):
             ).pack()
 
         ctk.CTkLabel(
-            f, text="Plot General", font=FONTS["script"],
+            f, text="Plot General 🌟", font=FONTS["script"],
             text_color=COLORS["accent"]
         ).pack(pady=(20, 5))
 

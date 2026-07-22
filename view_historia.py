@@ -14,12 +14,12 @@ class HistoriaView(ctk.CTkFrame):
     """Frame contenedor con sidebar y area de contenido dinamico"""
 
     NAV_ITEMS = [
-        ("Info", "info"),
-        ("Personajes", "personajes"),
-        ("Conexiones", "conexiones"),
-        ("Desarrollo", "desarrollo"),
-        ("Notas", "notas"),
-        ("Volver", "dashboard"),
+        ("Info 💫", "info"),
+        ("Personajes 🥸", "personajes"),
+        ("Conexiones 🕸️", "conexiones"),
+        ("Desarrollo 🧾", "desarrollo"),
+        ("Notas 📝", "notas"),
+        ("Volver ⬅️", "dashboard"),
     ]
 
     def __init__(self, parent, app, historia_id):
@@ -46,7 +46,7 @@ class HistoriaView(ctk.CTkFrame):
             bg_lbl = ctk.CTkLabel(self.sidebar, image=sidebar_bg, text="")
             bg_lbl.place(relwidth=1, relheight=1)
 
-        ctk.CTkLabel(self.sidebar, text="*", font=("Segoe UI", 40)).pack(pady=(30, 10))
+        ctk.CTkLabel(self.sidebar, text="🪷", font=("Segoe UI", 40)).pack(pady=(30, 10))
         self._lbl_nombre = ctk.CTkLabel(
             self.sidebar,
             text=self._truncate(self.h_nombre, 15),
