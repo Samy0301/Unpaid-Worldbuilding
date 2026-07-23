@@ -146,6 +146,27 @@ class ImageUtils:
             lbl = ctk.CTkLabel(parent, image=img, text="")
             lbl.pack(pady=pady)
 
+    @staticmethod
+    def blob_a_ctkimage(blob, size=(150, 150)):
+        """Convierte BLOB a CTkImage manteniendo la proporción (no siempre cuadrado)"""
+        if not blob:
+            return ImageUtils.avatar_default(size)
+        img = Image.open(io.BytesIO(blob))
+        
+        # En lugar de recortar cuadrado por defecto, ajustamos al tamaño manteniendo proporción
+        w, h = img.size
+        aspect = w / h
+        
+        if aspect > 1: # Horizontal
+            new_w = size[0]
+            new_h = int(size[0] / aspect)
+        else: # Vertical o Cuadrado
+            new_h = size[1]
+            new_w = int(size[1] * aspect)
+            
+        img = img.resize((new_w, new_h), Image.LANCZOS)
+        return ctk.CTkImage(light_image=img, dark_image=img, size=(new_w, new_h))
+
 
 class TextUtils:
     """Utilidades para manejo de texto con justificacion y adaptacion automatica"""
