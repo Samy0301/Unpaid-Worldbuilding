@@ -45,13 +45,27 @@ class ImageUtils:
 
     @staticmethod
     def blob_a_ctkimage_rounded(blob, size=(150, 150), radius=15, top_only=False):
+        """Convierte BLOB a CTkImage con esquinas redondeadas, manteniendo proporcion."""
         if not blob:
             img = Image.new("RGBA", size, "#FFF8F0")
             draw = ImageDraw.Draw(img)
             fill = "#FFF8F0"
         else:
             img = Image.open(io.BytesIO(blob)).convert("RGBA")
-            img = img.resize(size, Image.LANCZOS)
+            # Mantener proporcion: ajustar al tamano maximo sin deformar
+            w, h = img.size
+            max_w, max_h = size
+            aspect = w / h
+
+            if aspect > max_w / max_h:  # Mas ancha que el contenedor
+                new_w = max_w
+                new_h = int(max_w / aspect)
+            else:  # Mas alta o igual
+                new_h = max_h
+                new_w = int(max_h * aspect)
+
+            img = img.resize((new_w, new_h), Image.LANCZOS)
+            size = (new_w, new_h)
 
         mask = Image.new("L", size, 0)
         draw = ImageDraw.Draw(mask)
@@ -145,27 +159,6 @@ class ImageUtils:
         if img:
             lbl = ctk.CTkLabel(parent, image=img, text="")
             lbl.pack(pady=pady)
-
-    @staticmethod
-    def blob_a_ctkimage(blob, size=(150, 150)):
-        """Convierte BLOB a CTkImage manteniendo la proporción (no siempre cuadrado)"""
-        if not blob:
-            return ImageUtils.avatar_default(size)
-        img = Image.open(io.BytesIO(blob))
-        
-        # En lugar de recortar cuadrado por defecto, ajustamos al tamaño manteniendo proporción
-        w, h = img.size
-        aspect = w / h
-        
-        if aspect > 1: # Horizontal
-            new_w = size[0]
-            new_h = int(size[0] / aspect)
-        else: # Vertical o Cuadrado
-            new_h = size[1]
-            new_w = int(size[1] * aspect)
-            
-        img = img.resize((new_w, new_h), Image.LANCZOS)
-        return ctk.CTkImage(light_image=img, dark_image=img, size=(new_w, new_h))
 
 
 class TextUtils:

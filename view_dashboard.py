@@ -20,7 +20,7 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
         header.pack(fill="x", padx=20, pady=20)
 
         ctk.CTkLabel(
-            header, text="NovelPlanner 🌻", font=FONTS["title"],
+            header, text="NovelPlanner", font=FONTS["title"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
 
@@ -36,11 +36,6 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
         ).pack(side="right")
 
         ImageUtils.add_divider(self, pady=5)
-
-        ctk.CTkLabel(
-            self, text="🌸💮🌸💮🌸💮🌸💮🌸💮🌸💮🌸",
-            font=FONTS["script"], text_color=COLORS["btn_hover"]
-        ).pack(pady=(0, 10))
 
         self.grid_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=20, pady=10)
@@ -83,14 +78,19 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
 
             ImageUtils.add_corner_flowers(card, (50, 50))
 
-            img_w = CARD_WIDTH - 4
+            # Contenedor fijo para la imagen proporcional
             img_h = 210
+            img_container = ctk.CTkFrame(card, fg_color="transparent", height=img_h)
+            img_container.pack(fill="x", pady=(2, 0))
+            img_container.pack_propagate(False)
+
+            img_w = CARD_WIDTH - 4
             img = ImageUtils.blob_a_ctkimage_rounded(
                 foto, size=(img_w, img_h), radius=13, top_only=True
             )
             ctk.CTkLabel(
-                card, image=img, text="", fg_color="transparent"
-            ).pack(fill="x", pady=(2, 0))
+                img_container, image=img, text="", fg_color="transparent"
+            ).pack(expand=True)
 
             ctk.CTkLabel(
                 card, text=nombre, font=FONTS["heading"],

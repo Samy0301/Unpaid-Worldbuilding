@@ -78,7 +78,7 @@ class ImageCropper(ctk.CTkFrame):
 
         # Solo el botón de guardar
         ctk.CTkButton(
-            right_panel, text="Aplicar Recorte", command=self._aplicar_recorte,
+            right_panel, text="Guardar", command=self._aplicar_recorte,
             corner_radius=15, width=200, height=45,
             fg_color=COLORS["btn_primary"], hover_color=COLORS["btn_hover"],
             text_color=COLORS["text_light"], font=FONTS["heading"]

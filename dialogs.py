@@ -145,12 +145,25 @@ class _BaseDialog(ctk.CTkFrame):
         btn.pack()
 
     def _actualizar_preview(self, blob, shape="square"):
-        """Actualiza la vista previa de la foto."""
+        """Actualiza la vista previa de la foto respetando su forma original."""
         if blob:
+            from PIL import Image as PILImage
+            import io
+            img_raw = PILImage.open(io.BytesIO(blob))
+            w, h = img_raw.size
+            aspect = w / h
+
+            # Calculamos tamano de visualizacion maximo 180px
+            if aspect > 1: # Horizontal
+                disp_size = (180, int(180 / aspect))
+            else: # Vertical
+                disp_size = (int(180 * aspect), 180)
+
             if shape == "circle":
-                img = ImageUtils.blob_a_ctkimage_rounded(blob, (180, 180), radius=90)
+                img = ImageUtils.blob_a_ctkimage_rounded(blob, disp_size, radius=disp_size[1]//2)
             else:
-                img = ImageUtils.blob_a_ctkimage_rounded(blob, (180, 180), radius=20)
+                img = ImageUtils.blob_a_ctkimage_rounded(blob, disp_size, radius=10)
+
             self._preview_label.configure(image=img, text="")
             self._preview_label.image = img
         else:
@@ -163,31 +176,6 @@ class _BaseDialog(ctk.CTkFrame):
     @property
     def foto_blob(self):
         return self._foto_blob
-
-    def _actualizar_preview(self, blob, shape="square"):
-        """Actualiza la vista previa de la foto respetando su forma original."""
-        if blob:
-            from PIL import Image as PILImage
-            import io
-            img_raw = PILImage.open(io.BytesIO(blob))
-            w, h = img_raw.size
-            aspect = w / h
-            
-            # Calculamos tamaño de visualización máximo 180px
-            if aspect > 1: # Horizontal
-                disp_size = (180, int(180 / aspect))
-            else: # Vertical
-                disp_size = (int(180 * aspect), 180)
-
-            if shape == "circle":
-                img = ImageUtils.blob_a_ctkimage_rounded(blob, disp_size, radius=disp_size[1]//2)
-            else:
-                img = ImageUtils.blob_a_ctkimage_rounded(blob, disp_size, radius=10)
-                
-            self._preview_label.configure(image=img, text="")
-            self._preview_label.image = img
-        else:
-            self._preview_label.configure(image="", text="(Sin foto)")
 
 
 class HistoriaDialog(_BaseDialog):
@@ -533,7 +521,11 @@ class FichaPersonajeDialog(ctk.CTkFrame):
             ctk.CTkLabel(scroll, image=flower, text="").pack(pady=10)
 
         img = ImageUtils.blob_a_ctkimage_rounded(p[11], (220, 220), radius=110)
-        ctk.CTkLabel(scroll, image=img, text="").pack(pady=10)
+        img_container = ctk.CTkFrame(scroll, fg_color="transparent", height=220)
+        img_container.pack(pady=10)
+        img_container.pack_propagate(False)
+        ctk.CTkLabel(img_container, image=img, text="").pack(expand=True)
+
         ctk.CTkLabel(
             scroll, text=p[2], font=("Playfair Display", 26, "bold"),
             text_color=COLORS["text_primary"]

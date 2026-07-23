@@ -94,8 +94,16 @@ class PersonajesView(ctk.CTkFrame, DialogMixin):
 
             ImageUtils.add_corner_flowers(card, (40, 40))
 
+            # Contenedor fijo para la imagen proporcional
+            img_container = ctk.CTkFrame(card, fg_color="transparent", height=200)
+            img_container.pack(pady=(15, 0))
+            img_container.pack_propagate(False)
+
             img = ImageUtils.blob_a_ctkimage_rounded(foto, size=(200, 200), radius=20)
-            ctk.CTkLabel(card, image=img, text="").pack(pady=(15, 0))
+            ctk.CTkLabel(
+                img_container, image=img, text="", fg_color="transparent"
+            ).pack(expand=True)
+
             ctk.CTkLabel(
                 card, text=nombre, font=FONTS["heading"],
                 text_color=COLORS["text_primary"]
