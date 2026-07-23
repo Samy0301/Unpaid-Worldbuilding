@@ -20,7 +20,7 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
         header.pack(fill="x", padx=20, pady=20)
 
         ctk.CTkLabel(
-            header, text="NovelPlanner", font=FONTS["title"],
+            header, text="NovelPlanner 🌻", font=FONTS["title"],
             text_color=COLORS["text_primary"]
         ).pack(side="left")
 
@@ -36,6 +36,11 @@ class DashboardView(ctk.CTkFrame, DialogMixin):
         ).pack(side="right")
 
         ImageUtils.add_divider(self, pady=5)
+
+        ctk.CTkLabel(
+            self, text="🌸💮🌸💮🌸💮🌸💮🌸💮🌸💮🌸💮🌸",
+            font=FONTS["script"], text_color=COLORS["btn_hover"]
+        ).pack(pady=(0, 10))
 
         self.grid_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.grid_frame.pack(fill="both", expand=True, padx=20, pady=10)
